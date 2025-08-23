@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* App-level tweaks */
+.btn {
+  @apply px-3 py-1.5 rounded-md text-sm font-medium transition-colors;
+}
+.btn-primary {
+  @apply bg-indigo-600 text-white hover:bg-indigo-700;
+}
+.btn-secondary {
+  @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+}
+.card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+}
