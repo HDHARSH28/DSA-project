@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import axios from 'axios'
 import ArrayView from './components/ArrayView'
 import LinkedListView from './components/LinkedListView'
 import BSTView from './components/BSTView'
@@ -16,12 +17,16 @@ export default function App() {
   const [opInput, setOpInput] = useState('')
   const timerRef = useRef(null)
 
+  const api = useMemo(() => {
+    const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+    const instance = axios.create({ baseURL })
+    return instance
+  }, [])
+
   const fetchData = useCallback(async () => {
     try {
       // Try backend first, then fallback to static file
-      let res = await fetch('/api/data?_=' + Date.now(), { cache: 'no-store' })
-      if (!res.ok) throw new Error('Backend error ' + res.status)
-      const data = await res.json()
+      let { data } = await api.get('/api/data', { params: { _: Date.now() } })
       setRaw(data)
       const n = normalizeData(data)
       setMetrics(n.metrics)
@@ -29,9 +34,7 @@ export default function App() {
       setError('')
     } catch (e) {
       try {
-        const res2 = await fetch('/data.json?_=' + Date.now(), { cache: 'no-store' })
-        if (!res2.ok) throw new Error('Network error ' + res2.status)
-        const data2 = await res2.json()
+        const { data: data2 } = await axios.get('/data.json', { params: { _: Date.now() } })
         setRaw(data2)
         const n2 = normalizeData(data2)
         setMetrics(n2.metrics)
@@ -41,7 +44,7 @@ export default function App() {
         setError(String(e2))
       }
     }
-  }, [])
+  }, [api])
 
   useEffect(() => {
     fetchData()
@@ -63,11 +66,7 @@ export default function App() {
 
     // Send to backend if available
     try {
-      await fetch('/api/op', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ op, value: val ? Number(val) : undefined, forceType: forceType || undefined })
-      })
+      await api.post('/api/op', { op, value: val ? Number(val) : undefined, forceType: forceType || undefined })
     } catch {}
     fetchData()
   }
@@ -87,17 +86,19 @@ export default function App() {
     }
   }
 
+  const hasData = Array.isArray(values) && values.length > 0
+
   return (
     <div className="min-h-screen">
-      <header className="sticky top-0 z-10 bg-white/80 backdrop-blur border-b">
+      <header className="sticky top-0 z-10 bg-stone-900/80 backdrop-blur border-b border-stone-700">
         <div className="max-w-6xl mx-auto px-4 py-3 flex flex-wrap gap-3 items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-indigo-700">Morphing Data Structure Visualizer</h1>
-            <div className="text-xs text-gray-500">Type: <span className="font-medium">{type}</span></div>
+            <h1 className="text-xl font-bold text-indigo-300">Morphing Data Structure Visualizer</h1>
+            <div className="text-xs text-stone-400">Type: <span className="font-medium">{type}</span></div>
           </div>
           <div className="flex items-center gap-2">
             <input
-              className="border rounded-md px-2 py-1 text-sm"
+              className="border border-stone-700 bg-stone-800 rounded-md px-2 py-1 text-sm text-stone-100 placeholder-stone-400"
               placeholder="value"
               value={opInput}
               onChange={(e) => setOpInput(e.target.value)}
@@ -106,7 +107,7 @@ export default function App() {
             <button className="btn btn-secondary" onClick={() => handleOp('Delete')}>Delete</button>
             <button className="btn btn-secondary" onClick={() => handleOp('Find')}>Find</button>
             <select
-              className="border rounded-md px-2 py-1 text-sm"
+              className="border border-stone-700 bg-stone-800 rounded-md px-2 py-1 text-sm text-stone-100"
               value={forceType}
               onChange={(e) => setForceType(e.target.value)}
             >
@@ -121,12 +122,16 @@ export default function App() {
 
       <main className="max-w-6xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <section className="lg:col-span-2 card p-4 min-h-[420px]">
-          {renderView()}
+          {!hasData ? (
+            <div className="text-sm text-gray-500">No data yet</div>
+          ) : (
+            renderView()
+          )}
         </section>
         <aside className="flex flex-col gap-4">
           <div className="card p-4">
             <h2 className="font-semibold mb-2">Metrics</h2>
-            <div className="text-sm text-gray-700 space-y-1">
+            <div className="text-sm text-stone-300 space-y-1">
               <div>Operation time: <span className="font-medium">{metrics.opTimeMs} ms</span></div>
               <div>Morph count: <span className="font-medium">{metrics.morphCount}</span></div>
             </div>
@@ -136,13 +141,13 @@ export default function App() {
             <div className="max-h-72 overflow-auto text-sm">
               <ul className="list-disc pl-5 space-y-1">
                 {logs.map((line, idx) => (
-                  <li key={idx} className="text-gray-700">{line}</li>
+                  <li key={idx} className="text-stone-300">{line}</li>
                 ))}
               </ul>
             </div>
           </div>
           {error && (
-            <div className="card p-3 text-sm text-red-600">{String(error)}</div>
+            <div className="card p-3 text-sm text-red-400">{String(error)}</div>
           )}
         </aside>
       </main>

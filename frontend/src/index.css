@@ -7,11 +7,14 @@
   @apply px-3 py-1.5 rounded-md text-sm font-medium transition-colors;
 }
 .btn-primary {
-  @apply bg-indigo-600 text-white hover:bg-indigo-700;
+  @apply bg-indigo-500 text-white hover:bg-indigo-600;
 }
 .btn-secondary {
-  @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+  @apply bg-stone-700 text-stone-100 hover:bg-stone-600;
 }
 .card {
-  @apply bg-white rounded-lg shadow-sm border border-gray-200;
+  @apply bg-stone-800 rounded-lg shadow-sm border border-stone-700 text-stone-100;
 }
+
+/* Dark text defaults */
+body { @apply text-stone-200; }

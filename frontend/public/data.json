@@ -1,6 +1,0 @@
-{
-  "type": "Array",
-  "values": [1, 2, 30, 4],
-  "metrics": { "opTimeMs": 12, "morphCount": 0 },
-  "logs": ["Initialized"]
-}

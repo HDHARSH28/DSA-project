@@ -15,7 +15,7 @@ export default function HashMapView({ values, bucketCount = 5 }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
       {buckets.map((list, i) => (
         <div key={i} className="card p-3">
-          <div className="text-sm text-gray-600 mb-2">Bucket {i}</div>
+          <div className="text-sm text-stone-400 mb-2">Bucket {i}</div>
           <div className="flex gap-2 items-center overflow-x-auto">
             <AnimatePresence initial={false}>
               {list.map((v, idx) => (
@@ -28,7 +28,7 @@ export default function HashMapView({ values, bucketCount = 5 }) {
                   transition={{ type: 'spring', stiffness: 400, damping: 26 }}
                   className="card min-w-[48px] h-12 flex items-center justify-center"
                 >
-                  <div className="font-medium">{v}</div>
+                  <div className="font-medium text-stone-100">{v}</div>
                 </motion.div>
               ))}
             </AnimatePresence>

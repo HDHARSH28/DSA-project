@@ -18,7 +18,7 @@ export default function BSTView({ values }) {
   }, [])
 
   return (
-    <div ref={containerRef} className="w-full h-[360px] card p-2 overflow-hidden">
+  <div ref={containerRef} className="w-full h-[360px] card p-2 overflow-hidden">
       <Tree
         data={data}
         translate={{ x: size.width / 2, y: 60 }}
@@ -26,7 +26,7 @@ export default function BSTView({ values }) {
         zoom={0.8}
         orientation="vertical"
         pathFunc="elbow"
-        styles={{ links: { stroke: '#94a3b8' }, nodes: { node: { circle: { fill: '#4f46e5' } } } }}
+  styles={{ links: { stroke: '#475569' }, nodes: { node: { circle: { fill: '#4f46e5' } } } }}
         renderCustomNodeElement={({ nodeDatum }) => (
           <g>
             <circle r={16} fill="#4f46e5" />

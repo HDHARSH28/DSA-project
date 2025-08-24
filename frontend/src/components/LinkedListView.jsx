@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 function Arrow() {
   return (
-    <svg width="40" height="24" viewBox="0 0 40 24" className="text-gray-400">
+  <svg width="40" height="24" viewBox="0 0 40 24" className="text-stone-500">
       <line x1="0" y1="12" x2="30" y2="12" stroke="currentColor" strokeWidth="2"/>
       <polygon points="30,6 30,18 40,12" fill="currentColor" />
     </svg>
@@ -25,7 +25,7 @@ export default function LinkedListView({ values }) {
                 transition={{ type: 'spring', stiffness: 400, damping: 26 }}
                 className="card w-20 h-20 flex items-center justify-center"
               >
-                <div className="text-lg font-semibold">{v}</div>
+                <div className="text-lg font-semibold text-stone-100">{v}</div>
               </motion.div>
               {idx < values.length - 1 && <Arrow />}
             </React.Fragment>

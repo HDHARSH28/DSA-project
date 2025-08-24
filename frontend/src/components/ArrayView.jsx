@@ -16,7 +16,7 @@ export default function ArrayView({ values }) {
               transition={{ type: 'spring', stiffness: 500, damping: 30 }}
               className="card min-w-[60px] h-16 flex items-center justify-center px-3"
             >
-              <div className="text-lg font-semibold">{v}</div>
+              <div className="text-lg font-semibold text-stone-100">{v}</div>
             </motion.div>
           ))}
         </AnimatePresence>
