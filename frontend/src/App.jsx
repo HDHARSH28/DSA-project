@@ -18,8 +18,9 @@ export default function App() {
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch('/data.json?_=' + Date.now(), { cache: 'no-store' })
-      if (!res.ok) throw new Error('Network error ' + res.status)
+      // Try backend first, then fallback to static file
+      let res = await fetch('/api/data?_=' + Date.now(), { cache: 'no-store' })
+      if (!res.ok) throw new Error('Backend error ' + res.status)
       const data = await res.json()
       setRaw(data)
       const n = normalizeData(data)
@@ -27,7 +28,18 @@ export default function App() {
       setLogs((prev) => (n.logs?.length ? n.logs : prev))
       setError('')
     } catch (e) {
-      setError(String(e))
+      try {
+        const res2 = await fetch('/data.json?_=' + Date.now(), { cache: 'no-store' })
+        if (!res2.ok) throw new Error('Network error ' + res2.status)
+        const data2 = await res2.json()
+        setRaw(data2)
+        const n2 = normalizeData(data2)
+        setMetrics(n2.metrics)
+        setLogs((prev) => (n2.logs?.length ? n2.logs : prev))
+        setError('Using static data.json (backend not running?)')
+      } catch (e2) {
+        setError(String(e2))
+      }
     }
   }, [])
 
@@ -41,12 +53,23 @@ export default function App() {
   const type = forceType || n.type
   const values = n.values
 
-  const handleOp = (op) => {
+  const handleOp = async (op) => {
     const val = opInput.trim()
+    // Optimistic log
     setLogs((prev) => [
       `${new Date().toLocaleTimeString()} - ${op}${val ? ' ' + val : ''}`,
       ...prev
     ].slice(0, 100))
+
+    // Send to backend if available
+    try {
+      await fetch('/api/op', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ op, value: val ? Number(val) : undefined, forceType: forceType || undefined })
+      })
+    } catch {}
+    fetchData()
   }
 
   const renderView = () => {
