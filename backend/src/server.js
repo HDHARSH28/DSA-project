@@ -3,6 +3,7 @@ import cors from 'cors'
 import fs from 'fs'
 import path from 'path'
 import dotenv from 'dotenv'
+import { performance } from 'node:perf_hooks'
 
 // Load env
 dotenv.config()
@@ -178,7 +179,7 @@ app.get('/api/data', (_req, res) => {
 })
 
 app.post('/api/op', (req, res) => {
-  const start = Date.now()
+  const start = performance.now()
   const { op, value, forceType } = req.body || {}
   let v = value
   if (v !== undefined && v !== null) v = Number(v)
@@ -203,7 +204,7 @@ app.post('/api/op', (req, res) => {
   else if (op === 'Display') { /* no-op */ }
   else { ok = false }
 
-  metrics.opTimeMs = Date.now() - start
+  metrics.opTimeMs = Number((performance.now() - start).toFixed(3))
 
   // Persist and log
   saveDB(activeType, ds)
