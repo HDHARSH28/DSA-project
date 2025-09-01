@@ -120,14 +120,20 @@ class Wrapper {
   }
 
 
+// ...
     // ---------- Converters ----------
     arrayToLL() {
       const start = performance.now();
       this.head = null;
       for (let i = this.arr.length - 1; i >= 0; i--) {
-        this.ll_insert_front(this.arr[i]);
+        const node = this._LLNode(this.arr[i]);
+        node.next = this.head;
+        this.head = node;
       }
+      // After building the LL, the front_database should be updated
+      // to reflect the linked list, which is the same as the source array.
       const end = performance.now();
+      this.front_database = [...this.arr];
       return this._emit("ARRAY_TO_LL", "success", this.arr, end - start);
     }
 
@@ -139,10 +145,14 @@ class Wrapper {
         result.push(cur.value);
         cur = cur.next;
       }
+      // Update the internal array and front_database to match the new array
+      this.arr = result;
       const end = performance.now();
+      this.front_database = result;
       return this._emit("LL_TO_ARRAY", "success", result, end - start);
     }
 }
+// ...
 
 // Export for Node.js
 module.exports = Wrapper;
