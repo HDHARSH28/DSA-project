@@ -66,7 +66,7 @@ function App() {
   };
   const handleArrayToLL = async () => {
     const res = await arrayToLL();
-    // await fetchArray();
+    await fetchArray();
     setOpDetail(res.detail || "");
     setOpValue(res.value !== undefined ? res.value : "");
     setOpTime(res.time_ms || "");
@@ -74,7 +74,7 @@ function App() {
   };
   const handleLLInsert = async () => {
     const res = await ll_insert_front(input);
-    // await fetchArray();
+    await fetchArray();
     setOpDetail(res.detail || "");
     setOpValue(res.value !== undefined ? res.value : "");
     setOpTime(res.time_ms || "");
