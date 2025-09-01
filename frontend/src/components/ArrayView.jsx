@@ -1,26 +1,22 @@
-import React from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-
+// Note: This component always receives the array for rendering.
 export default function ArrayView({ values }) {
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-x-auto" aria-label="Array Visualization">
       <div className="flex gap-2 items-center">
-        <AnimatePresence initial={false}>
-          {values.map((v, idx) => (
-            <motion.div
-              key={String(v) + '-' + idx}
-              layout
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
-              className="card min-w-[60px] h-16 flex items-center justify-center px-3"
+        {Array.isArray(values) && values.length > 0 ? (
+          values.map((v, idx) => (
+            <div
+              key={idx}
+              className="card min-w-[60px] h-16 flex items-center justify-center px-3 bg-blue-600 text-white rounded shadow hover:bg-blue-700 transition"
+              aria-label={`Array element ${v}`}
             >
-              <div className="text-lg font-semibold text-stone-100">{v}</div>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+              <span className="text-lg font-semibold">{v}</span>
+            </div>
+          ))
+        ) : (
+          <div className="text-gray-400 italic">Array is empty</div>
+        )}
       </div>
     </div>
-  )
+  );
 }

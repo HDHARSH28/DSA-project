@@ -1,30 +1,49 @@
-export function normalizeData(raw) {
-  if (!raw || typeof raw !== 'object') {
-    return {
-      type: 'Array',
-      values: [],
-      metrics: { opTimeMs: 0, morphCount: 0 },
-      logs: []
-    }
-  }
-  const type = raw.type || 'Array'
-  const values = Array.isArray(raw.values) ? raw.values : []
-  const metrics = raw.metrics || { opTimeMs: 0, morphCount: 0 }
-  const logs = Array.isArray(raw.logs) ? raw.logs : []
-  return { type, values, metrics, logs }
+
+import axios from "axios";
+const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
+
+export async function ll_insert_front(value) {
+  const res = await axios.post(`${BASE_URL}/ll/insert_front`, { value });
+  return res.data;
 }
 
-export function toBSTTree(values) {
-  // Build a BST from values for demo; assumes numbers
-  if (!Array.isArray(values) || values.length === 0) return null
-  const insert = (node, val) => {
-    if (!node) return { name: String(val) }
-    const nval = Number(node.name)
-    if (val < nval) node.children = [insert(node.children?.[0], val), node.children?.[1]].filter(Boolean)
-    else node.children = [node.children?.[0], insert(node.children?.[1], val)].filter(Boolean)
-    return node
-  }
-  return values.reduce((root, v) => insert(root, Number(v)), null)
+export async function ll_delete(value) {
+  const res = await axios.post(`${BASE_URL}/ll/delete`, { value });
+  return res.data;
 }
 
-export const DS_TYPES = ['Array', 'LinkedList', 'BST', 'HashMap']
+export async function ll_search(value) {
+  const res = await axios.post(`${BASE_URL}/ll/search`, { value });
+  return res.data;
+}
+
+export async function arr_push(value) {
+  const res = await axios.post(`${BASE_URL}/arr/push`, { value });
+  return res.data;
+}
+
+export async function arr_delete(value) {
+  const res = await axios.post(`${BASE_URL}/arr/delete`, { value });
+  return res.data;
+}
+
+export async function arr_search(value) {
+  const res = await axios.post(`${BASE_URL}/arr/search`, { value });
+  return res.data;
+}
+
+export async function arrayToLL() {
+  const res = await axios.post(`${BASE_URL}/convert/arrayToLL`);
+  return res.data;
+}
+
+export async function llToArray() {
+  const res = await axios.post(`${BASE_URL}/convert/llToArray`);
+  return res.data;
+}
+export async function getFrontDatabase() {
+  const res = await axios.get(`${BASE_URL}/frontend/array`);
+  return res.data;
+}
+
+
