@@ -69,11 +69,14 @@ class Wrapper {
 
   arr_push(value) {
     const start = performance.now();
-    this.arr.push(value);
+    // Prevent double push if value is a number and type coercion happens
+    if (!this.arr.includes(value)) {
+      this.arr.push(value);
+      // Update front_database outside timing
+      this.front_database.push(value);
+    }
     const end = performance.now();
-    // Update front_database outside timing
-    this.front_database.push(value);
-    return this._emit("ARR_PUSH", "sucess", value, end - start);
+    return this._emit("ARR_PUSH", "success", value, end - start);
   }
 
   arr_delete(value) {
