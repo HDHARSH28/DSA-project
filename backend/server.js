@@ -5,7 +5,6 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const Wrapper = require('./main.js');
 
-
 const app = express();
 const ds = new Wrapper();
 
@@ -44,16 +43,50 @@ app.post('/arr/search', (req, res) => {
   res.json(ds.arr_search(value));
 });
 
+// ---------- BST Endpoints ----------
+app.post('/bst/insert', (req, res) => {
+  const { value } = req.body;
+  res.json(ds.bst_insert(value));
+});
+
+app.post('/bst/search', (req, res) => {
+  const { value } = req.body;
+  res.json(ds.bst_search(value));
+});
+
+app.post('/bst/delete', (req, res) => {
+  const { value } = req.body;
+  res.json(ds.bst_delete(value));
+});
 
 // ---------- Converter Endpoints ----------
 app.post('/convert/arrayToLL', (req, res) => {
-  res.json(ds.arrayToLL());
+  r = ds.arrayToLL();
+  console.log(r);
+  res.json(r);
+  // res.json(ds.arrayToLL());
 });
 
 app.post('/convert/llToArray', (req, res) => {
   res.json(ds.llToArray());
 });
 
+// ---------- BST Converter Endpoints ----------
+app.post('/convert/arrayToBST', (req, res) => {
+  res.json(ds.arrayToBST());
+});
+
+app.post('/convert/llToBST', (req, res) => {
+  res.json(ds.llToBST());
+});
+
+app.post('/convert/bstToArray', (req, res) => {
+  res.json(ds.bstToArray());
+});
+
+app.post('/convert/bstToLL', (req, res) => {
+  res.json(ds.bstToLL());
+});
 // ---------- Frontend Database Endpoint ----------
 app.get('/frontend/array', (req, res) => {
   res.json(ds.getFrontDatabase());
