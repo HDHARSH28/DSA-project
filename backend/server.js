@@ -3,7 +3,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const Wrapper = require('./main.js');
+const Wrapper = require('./static.js');
 
 const app = express();
 const ds = new Wrapper();
