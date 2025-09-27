@@ -27,6 +27,19 @@ export async function arr_search(value) {
   return res.data;
 }
 
+export async function bst_insert(value) {
+  const res = await axios.post(`${BASE_URL}/bst/insert`, { value });
+  return res.data;
+}
+export async function bst_search(value) {
+  const res = await axios.post(`${BASE_URL}/bst/search`, { value });
+  return res.data;
+}
+export async function bst_delete(value) {
+  const res = await axios.post(`${BASE_URL}/bst/delete`, { value });
+  return res.data;
+}
+
 export async function arrayToLL() {
   const res = await axios.post(`${BASE_URL}/convert/arrayToLL`);
   return res.data;
@@ -51,19 +64,6 @@ export async function arrayToBST() {
 }
 export async function bstToArray() {
   const res = await axios.post(`${BASE_URL}/convert/bstToArray`);
-  return res.data;
-}
-
-export async function bst_insert(value) {
-  const res = await axios.post(`${BASE_URL}/bst/insert`, { value });
-  return res.data;
-}
-export async function bst_search(value) {
-  const res = await axios.post(`${BASE_URL}/bst/search`, { value });
-  return res.data;
-}
-export async function bst_delete(value) {
-  const res = await axios.post(`${BASE_URL}/bst/delete`, { value });
   return res.data;
 }
 

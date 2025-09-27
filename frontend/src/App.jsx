@@ -26,18 +26,17 @@ function App() {
   const [array, setArray] = useState([]);
   const [input, setInput] = useState("");
   const [searchResult, setSearchResult] = useState(null);
+  const [opName, setOpName] = useState("");
   const [opDetail, setOpDetail] = useState("");
-  const [opValue, setOpValue] = useState("");
   const [opTime, setOpTime] = useState("");
+  const [events, setEvents] = useState([]); // event history
   const [activeTab, setActiveTab] = useState("array");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   // Reset feedback when switching tabs
   useEffect(() => {
-    setOpDetail("");
-    setOpValue("");
-    setOpTime("");
+    // Keep last operation feedback; only clear transient input/search.
     setSearchResult(null);
     setInput("");
     setError("");
@@ -66,6 +65,12 @@ function App() {
       setError("Failed to fetch data");
     }
   };
+
+  // Record event helper
+  const recordEvent = (evt) => {
+    if (!evt) return;
+    setEvents((prev) => [evt, ...prev].slice(0, 200)); // cap history
+  };
   // -------------------- Operation Handlers --------------------
 
   // Array operations
@@ -75,10 +80,11 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await arr_push(numInput);
-      await fetchArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
       setOpDetail(res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setInput("");
       setSearchResult(null);
     } catch (err) {
@@ -94,10 +100,11 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await arr_delete(numInput);
-      await fetchArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
       setOpDetail(res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setInput("");
       setSearchResult(null);
     } catch (err) {
@@ -113,45 +120,12 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await arr_search(numInput);
-      await fetchArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
       setOpDetail(res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setSearchResult(res.detail === "found");
-    } catch (err) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleArrayToLL = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await arrayToLL();
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setActiveTab("linkedlist");
-    } catch (err) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleArrayToBST = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await arrayToBST();
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setActiveTab("bst");
+      setOpTime(res.time || "");
+      setSearchResult(res.detail?.startsWith("found") || false);
+      recordEvent(res);
     } catch (err) {
       setError(err.message || "An error occurred");
     } finally {
@@ -166,10 +140,11 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await ll_insert_front(numInput);
-      await fetchArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
       setOpDetail(res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setInput("");
       setSearchResult(null);
     } catch (err) {
@@ -185,10 +160,11 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await ll_delete(numInput);
-      await fetchArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
       setOpDetail(res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setInput("");
       setSearchResult(null);
     } catch (err) {
@@ -204,45 +180,12 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await ll_search(numInput);
-      await fetchArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
       setOpDetail(res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setSearchResult(res.detail === "found");
-    } catch (err) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLLToArray = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await llToArray();
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setActiveTab("array");
-    } catch (err) {
-      setError(err.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLLToBST = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      const res = await llToBST();
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setActiveTab("bst");
+      setOpTime(res.time || "");
+      setSearchResult(res.detail?.startsWith("found") || false);
+      recordEvent(res);
     } catch (err) {
       setError(err.message || "An error occurred");
     } finally {
@@ -257,10 +200,11 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await bst_insert(numInput);
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setInput("");
       setSearchResult(null);
     } catch (err) {
@@ -276,10 +220,11 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await bst_delete(numInput);
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setInput("");
       setSearchResult(null);
     } catch (err) {
@@ -295,11 +240,84 @@ function App() {
       setError("");
       const numInput = validateInput(input);
       const res = await bst_search(numInput);
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
-      setSearchResult(res.detail === "found");
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      setSearchResult(res.detail?.startsWith("found") || false);
+      recordEvent(res);
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLLToArray = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await llToArray();
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("array");
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLLToBST = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await llToBST();
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("bst");
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleArrayToLL = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await arrayToLL();
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("linkedlist");
+    } catch (err) {
+      setError(err.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleArrayToBST = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await arrayToBST();
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("bst");
     } catch (err) {
       setError(err.message || "An error occurred");
     } finally {
@@ -312,10 +330,11 @@ function App() {
       setLoading(true);
       setError("");
       const res = await bstToArray();
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setActiveTab("array");
     } catch (err) {
       setError(err.message || "An error occurred");
@@ -329,10 +348,11 @@ function App() {
       setLoading(true);
       setError("");
       const res = await bstToLL();
-      await fetchArray();
-      setOpDetail(res.op || res.detail || "");
-      setOpValue(res.value !== undefined ? res.value : "");
-      setOpTime(res.time_ms || "");
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
       setActiveTab("linkedlist");
     } catch (err) {
       setError(err.message || "An error occurred");
@@ -345,7 +365,7 @@ function App() {
     fetchArray();
   }, []);
 
-  // -------------------- UI --------------------
+  // --------- UI --------------------
   return (
     <div className="min-h-screen bg-stone-900 text-stone-100 p-8">
       <h1 className="text-3xl font-bold mb-6 text-indigo-300">DS Visualizer</h1>
@@ -389,20 +409,19 @@ function App() {
       )}
 
       {/* Operation Result */}
-      {opDetail && !error && (
+      {(opDetail || opName) && !error && (
         <div className="mb-4 p-3 rounded bg-stone-800 border border-stone-700">
           <span className="font-semibold text-indigo-400">Operation:</span>{" "}
-          {opDetail}
-          {opValue !== "" && (
-            <span className="ml-4">
-              <span className="font-semibold text-blue-400">Value:</span>{" "}
-              {opValue}
+          {opName && (
+            <span className="font-mono text-xs bg-stone-700 px-2 py-0.5 rounded mr-2 text-indigo-300">
+              {opName}
             </span>
           )}
-          {opTime !== "" && (
+          <span>{opDetail}</span>
+          {opTime && (
             <span className="ml-4">
               <span className="font-semibold text-green-400">Time:</span>{" "}
-              {opTime} ms
+              {opTime}
             </span>
           )}
         </div>
@@ -568,6 +587,36 @@ function App() {
             <span className={searchResult ? "text-green-400" : "text-red-400"}>
               {searchResult ? "Found" : "Not Found"}
             </span>
+          </div>
+        )}
+
+        {/* Event Log */}
+        {events.length > 0 && (
+          <div className="mt-6">
+            <h2 className="text-lg font-semibold mb-2 text-indigo-300">
+              Event Log
+            </h2>
+            <div className="max-h-64 overflow-auto border border-stone-700 rounded bg-stone-900/40 text-sm divide-y divide-stone-800">
+              {events.map((e, i) => (
+                <div
+                  key={i}
+                  className="px-3 py-2 flex flex-col sm:flex-row sm:items-center gap-1"
+                >
+                  <span className="text-indigo-400 font-mono text-xs sm:text-[11px] tracking-wide">
+                    {e.op}
+                  </span>
+                  <span className="flex-1 text-stone-300">{e.detail}</span>
+                  {e.time && (
+                    <span className="text-green-400 font-mono text-xs">
+                      {e.time}
+                    </span>
+                  )}
+                  <span className="text-stone-500 font-mono text-[10px] hidden md:inline">
+                    [{e.array?.join(", ")}]
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>
