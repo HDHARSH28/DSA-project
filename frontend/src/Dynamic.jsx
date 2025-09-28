@@ -65,7 +65,8 @@ export default function DynamicView() {
     try {
       setLoading(true);
       setError("");
-      const res = await fetch("http://localhost:3000/all");
+      // UPDATED: Use the new /dy/all endpoint
+      const res = await fetch("http://localhost:3000/dy/all"); 
       const json = await res.json();
       setData(json.data);
       setDsType(json.type);
@@ -93,7 +94,8 @@ export default function DynamicView() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:3000/insert", {
+      // UPDATED: Use the new /dy/insert endpoint
+      const res = await fetch("http://localhost:3000/dy/insert", { 
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -136,9 +138,12 @@ export default function DynamicView() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:3000/remove", {
+      // UPDATED: Use the new /dy/remove endpoint
+      const res = await fetch("http://localhost:3000/dy/remove", { 
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
+        // Note: The backend uses a POST body even though the method is DELETE. 
+        // We ensure the body is present for the index.
         body: JSON.stringify({ index: Number(index) }),
       });
       const json = await res.json();
@@ -168,8 +173,9 @@ export default function DynamicView() {
     setLoading(true);
     setError("");
     try {
+      // UPDATED: Use the new /dy/search/:value endpoint
       const res = await fetch(
-        `http://localhost:3000/search/${encodeURIComponent(searchValue)}`
+        `http://localhost:3000/dy/search/${encodeURIComponent(searchValue)}` 
       );
       const json = await res.json();
       setDsType(json.type);

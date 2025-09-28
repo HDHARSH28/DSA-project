@@ -1,5 +1,6 @@
-// Data Structure Classes
+// Data Structure Classes for Dynamic Mode
 
+// Node for Linked List
 class ListNode {
     constructor(value) {
         this.value = value;
@@ -7,6 +8,7 @@ class ListNode {
     }
 }
 
+// Linked List implementation
 class LinkedList {
     constructor() {
         this.head = null;
@@ -24,8 +26,11 @@ class LinkedList {
             curr = curr.next;
             i++;
         }
-        node.next = curr;
-        prev.next = node;
+        // Assuming a valid index for insertion or insertion at the end
+        if (prev) {
+            node.next = curr;
+            prev.next = node;
+        }
     }
     removeAt(index) {
         if (!this.head) return;
@@ -51,6 +56,7 @@ class LinkedList {
     }
 }
 
+// Node for Binary Search Tree
 class BSTNode {
     constructor(value) {
         this.value = value;
@@ -59,6 +65,7 @@ class BSTNode {
     }
 }
 
+// Binary Search Tree implementation
 class BST {
     constructor() {
         this.root = null;
@@ -94,21 +101,19 @@ class BST {
     }
 }
 
-// Dynamic Structure Handler
-
+// Dynamic Structure Handler - Manages the current DS and handles switching
 class DynamicDS {
     constructor() {
-        this.ds = [];
+        this.ds = []; // Initial data structure is an Array
         this.type = 'array';
     }
 
+    // Utility function to convert current data to the target type
     switchTo(type) {
         if (this.type === type) return;
-        // Convert current ds to new type
+
         if (type === 'array') {
-            if (this.type === 'linkedlist') {
-                this.ds = this.ds.toArray();
-            } else if (this.type === 'bst') {
+            if (this.type === 'linkedlist' || this.type === 'bst') {
                 this.ds = this.ds.toArray();
             }
         } else if (type === 'linkedlist') {
@@ -126,7 +131,7 @@ class DynamicDS {
     }
 
     insertAt(index, value) {
-        // If insert at end, use array
+        // Insertion logic favors Array for push (end) and LinkedList for indexed insertion
         if (index === undefined || index === this.getLength()) {
             this.switchTo('array');
             this.ds.push(value);
@@ -137,58 +142,34 @@ class DynamicDS {
     }
 
     removeAt(index) {
+        // Removal by index uses LinkedList
         this.switchTo('linkedlist');
         this.ds.removeAt(index);
     }
 
     search(value) {
+        // Search operation uses BST
         this.switchTo('bst');
         return this.ds.search(value);
     }
 
     getAll() {
+        // Returns the data as an Array for the frontend
         if (this.type === 'array') return this.ds;
         return this.ds.toArray();
     }
 
     getLength() {
         if (this.type === 'array') return this.ds.length;
-        if (this.type === 'linkedlist') return this.ds.toArray().length;
-        if (this.type === 'bst') return this.ds.toArray().length;
+        // For complexity estimation, calling toArray().length is not ideal,
+        // but it's the simplest way to abstract length across structures here.
+        if (this.type === 'linkedlist' || this.type === 'bst') return this.ds.toArray().length;
         return 0;
+    }
+
+    getType() {
+        return this.type;
     }
 }
 
-// Example Express Backend
-
-const express = require('express');
-const app = express();
-app.use(express.json());
-
-const dynamicDS = new DynamicDS();
-
-app.post('/insert', (req, res) => {
-    const { index, value } = req.body;
-    dynamicDS.insertAt(index, value);
-    res.json({ data: dynamicDS.getAll(), type: dynamicDS.type });
-});
-
-app.delete('/remove', (req, res) => {
-    const { index } = req.body;
-    dynamicDS.removeAt(index);
-    res.json({ data: dynamicDS.getAll(), type: dynamicDS.type });
-});
-
-app.get('/search/:value', (req, res) => {
-    const value = parseInt(req.params.value);
-    const found = dynamicDS.search(value);
-    res.json({ found, type: dynamicDS.type });
-});
-
-app.get('/all', (req, res) => {
-    res.json({ data: dynamicDS.getAll(), type: dynamicDS.type });
-});
-
-app.listen(3000, () => {
-    console.log('Dynamic DS backend running on port 3000');
-});
+module.exports = DynamicDS;

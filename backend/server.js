@@ -3,13 +3,21 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const Wrapper = require('./static.js');
+const Wrapper = require('./static.js'); // Static DS logic
+const DynamicDS = require('./dynamic.js'); // Dynamic DS logic
 
 const app = express();
-const ds = new Wrapper();
+const ds = new Wrapper(); // Static DS instance
+const dynamicDS = new DynamicDS(); // Dynamic DS instance
 
 app.use(cors());
 app.use(bodyParser.json());
+
+const PORT = 3000;
+
+// =======================================================
+// --- START: Static Endpoints (Original /ll, /arr, /bst, /convert) ---
+// =======================================================
 
 // ---------- Linked List Endpoints ----------
 app.post('/ll/insert_front', (req, res) => {
@@ -64,7 +72,6 @@ app.post('/convert/arrayToLL', (req, res) => {
   r = ds.arrayToLL();
   console.log(r);
   res.json(r);
-  // res.json(ds.arrayToLL());
 });
 
 app.post('/convert/llToArray', (req, res) => {
@@ -87,10 +94,59 @@ app.post('/convert/bstToArray', (req, res) => {
 app.post('/convert/bstToLL', (req, res) => {
   res.json(ds.bstToLL());
 });
-// ---------- Frontend Database Endpoint ----------
+// ---------- Frontend Database Endpoint (Static Mode) ----------
 app.get('/frontend/array', (req, res) => {
   res.json(ds.getFrontDatabase());
 });
 
+// =======================================================
+// --- END: Static Endpoints ---
+// =======================================================
+
+
+// =======================================================
+// --- START: Dynamic Endpoints (Prefix: /dy) ---
+// =======================================================
+
+// Dynamic Insert: Prefers Array push (no index) or LinkedList insert (with index)
+app.post('/dy/insert', (req, res) => {
+    const { index, value } = req.body;
+    dynamicDS.insertAt(index, value);
+    res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
+});
+
+// Dynamic Remove: Uses LinkedList removeAt
+app.delete('/dy/remove', (req, res) => {
+    const { index } = req.body;
+    dynamicDS.removeAt(index);
+    res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
+});
+
+// Dynamic Search: Uses BST search
+app.get('/dy/search/:value', (req, res) => {
+    // Attempt to parse value as number, if it fails, use the original string
+    let value;
+    const num = Number(req.params.value);
+    // Check if the parameter can be converted to a meaningful number
+    if (!isNaN(num) && req.params.value.trim() !== '') {
+        value = num;
+    } else {
+        value = req.params.value;
+    }
+
+    const found = dynamicDS.search(value);
+    res.json({ found, type: dynamicDS.getType() });
+});
+
+// Dynamic Get All: Returns current data and type
+app.get('/dy/all', (req, res) => {
+    res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
+});
+
+// =======================================================
+// --- END: Dynamic Endpoints ---
+// =======================================================
+
+
 // ---------- Start Server ----------
-app.listen(3000, () => console.log("🚀 Server running at http://localhost:3000"));
+app.listen(PORT, () => console.log(`🚀 Server running at http://localhost:${PORT}`));
