@@ -112,19 +112,25 @@ class DynamicDS {
     switchTo(type) {
         if (this.type === type) return;
 
+        // Always normalize current data to an Array first
+        let currentArray;
+        if (this.type === 'array') {
+            currentArray = this.ds;
+        } else {
+            currentArray = this.ds.toArray();
+        }
+
         if (type === 'array') {
-            if (this.type === 'linkedlist' || this.type === 'bst') {
-                this.ds = this.ds.toArray();
-            }
+            this.ds = currentArray;
         } else if (type === 'linkedlist') {
             let ll = new LinkedList();
-            for (let i = 0; i < this.ds.length; i++) {
-                ll.insertAt(i, this.ds[i]);
+            for (let i = 0; i < currentArray.length; i++) {
+                ll.insertAt(i, currentArray[i]);
             }
             this.ds = ll;
         } else if (type === 'bst') {
             let bst = new BST();
-            for (let v of this.ds) bst.insert(v);
+            for (let v of currentArray) bst.insert(v);
             this.ds = bst;
         }
         this.type = type;
