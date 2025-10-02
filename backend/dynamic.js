@@ -176,6 +176,26 @@ class DynamicDS {
     getType() {
         return this.type;
     }
+
+    // Sort operation using BST inorder traversal; sets current DS type to 'bst'
+    sort(order = 'asc') {
+        const values = this.getAll();
+
+        // Build BST from current values
+        const bst = new BST();
+        for (let v of values) bst.insert(v);
+
+        // Inorder traversal yields ascending order
+        let sorted = bst.toArray();
+        if (order === 'desc') sorted = [...sorted].reverse();
+
+        // After sorting, represent the structure as a BST
+        const bstRebuilt = new BST();
+        for (let v of sorted) bstRebuilt.insert(v);
+        this.ds = bstRebuilt;
+        this.type = 'bst';
+        return sorted;
+    }
 }
 
 module.exports = DynamicDS;

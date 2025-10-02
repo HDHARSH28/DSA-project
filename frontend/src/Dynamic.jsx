@@ -200,6 +200,33 @@ export default function DynamicView() {
     }
   };
 
+  const handleSort = async (direction) => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("http://localhost:3000/dy/sort", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order: direction }),
+      });
+      const json = await res.json();
+      setData(json.data);
+      setDsType(json.type);
+      setOpName("Sort");
+      setOpDetail(`Sorted ${json.order === "desc" ? "descending" : "ascending"}`);
+      recordEvent({
+        op: "Sort",
+        detail: `Sorted ${json.order === "desc" ? "descending" : "ascending"}`,
+        array: json.data,
+      });
+      setSearchResult(null);
+    } catch {
+      setError("Sort failed");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Visualizer selection
   let Visualizer = ArrayView;
   if (dsType === "linkedlist") Visualizer = LinkedListView;
@@ -294,6 +321,22 @@ export default function DynamicView() {
             type="button"
           >
             Search
+          </button>
+          <button
+            onClick={() => handleSort("asc")}
+            className="btn btn-secondary"
+            disabled={loading}
+            type="button"
+          >
+            Sort Asc
+          </button>
+          <button
+            onClick={() => handleSort("desc")}
+            className="btn btn-secondary"
+            disabled={loading}
+            type="button"
+          >
+            Sort Desc
           </button>
         </div>
         <Visualizer values={data} />

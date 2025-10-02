@@ -143,6 +143,13 @@ app.get('/dy/all', (req, res) => {
     res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
 });
 
+// Dynamic Sort: Sorts current data; preserves DS type while rebuilding
+app.post('/dy/sort', (req, res) => {
+    const { order } = req.body || {};
+    const data = dynamicDS.sort(order === 'desc' ? 'desc' : 'asc');
+    res.json({ data, type: dynamicDS.getType(), order: order === 'desc' ? 'desc' : 'asc' });
+});
+
 // =======================================================
 // --- END: Dynamic Endpoints ---
 // =======================================================
