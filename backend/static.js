@@ -233,7 +233,7 @@ class Wrapper {
   }
   // ---------- Frontend Database Getter ----------
   getFrontDatabase() {
-    return { array: this.front_database };
+    return { array: this.front_database, tree: this._cloneBST(this.bst_root) };
   }
 
   // ---------- Emitter ----------
@@ -244,6 +244,7 @@ class Wrapper {
       op,
       detail: detail || "",
       array: [...this.front_database],
+      tree: this._cloneBST(this.bst_root),
       time: time !== undefined ? `${time.toFixed(4)} ms` : undefined,
     };
     return event;
@@ -332,6 +333,16 @@ class Wrapper {
     else if (value > node.value)
       node.right = this._insertBSTNode(node.right, value);
     return node;
+  }
+
+  // Return a plain serializable clone of the BST for the frontend visualizer
+  _cloneBST(node) {
+    if (!node) return null;
+    return {
+      value: node.value,
+      left: this._cloneBST(node.left),
+      right: this._cloneBST(node.right),
+    };
   }
 }
 
