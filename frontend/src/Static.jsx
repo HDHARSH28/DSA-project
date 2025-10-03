@@ -6,10 +6,13 @@ import {
   arr_push,
   arr_delete,
   arr_search,
+  arr_sort_inc,
+  arr_sort_dec,
   arrayToLL,
   ll_insert_front,
   ll_delete,
   ll_search,
+  ll_insert_end,
   llToArray,
   getFrontDatabase,
   bst_insert,
@@ -119,12 +122,67 @@ export default function StaticView() {
       setLoading(false);
     }
   };
+
+  const handleArraySortInc = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await arr_sort_inc();
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setSearchResult(null);
+    } catch (e) {
+      setError(e.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleArraySortDec = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const res = await arr_sort_dec();
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setSearchResult(null);
+    } catch (e) {
+      setError(e.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
   const handleLLInsert = async () => {
     try {
       setLoading(true);
       setError("");
       const num = validateInput(input);
       const res = await ll_insert_front(num);
+      setArray(res.array || []);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
+    } catch (e) {
+      setError(e.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleLLEndInsert = async () => {
+    try {
+      setLoading(true);
+      setError("");
+      const num = validateInput(input);
+      const res = await ll_insert_end(num);
       setArray(res.array || []);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
@@ -433,6 +491,20 @@ export default function StaticView() {
                 Search
               </button>
               <button
+                onClick={handleArraySortInc}
+                className="btn btn-secondary"
+                disabled={loading}
+              >
+                Sort ↑
+              </button>
+              <button
+                onClick={handleArraySortDec}
+                className="btn btn-secondary"
+                disabled={loading}
+              >
+                Sort ↓
+              </button>
+              <button
                 onClick={handleArrayToLL}
                 className="btn btn-secondary"
                 disabled={loading}
@@ -456,6 +528,13 @@ export default function StaticView() {
                 disabled={loading}
               >
                 Insert Front
+              </button>
+              <button
+                onClick={handleLLEndInsert}
+                className="btn btn-secondary"
+                disabled={loading}
+              >
+                Insert End
               </button>
               <button
                 onClick={handleLLDelete}
