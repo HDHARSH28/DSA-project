@@ -26,6 +26,7 @@ import {
 
 export default function StaticView() {
   const [array, setArray] = useState([]);
+  const [tree, setTree] = useState(null);
   const [input, setInput] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [opName, setOpName] = useState("");
@@ -53,6 +54,7 @@ export default function StaticView() {
     try {
       const res = await getFrontDatabase();
       setArray(res.array || []);
+      setTree(res.tree || null);
     } catch {
       setError("Failed to fetch data");
     }
@@ -73,6 +75,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await arr_push(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -92,6 +95,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await arr_delete(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -111,6 +115,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await arr_search(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -129,6 +134,7 @@ export default function StaticView() {
       setError("");
       const res = await arr_sort_inc();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -147,6 +153,7 @@ export default function StaticView() {
       setError("");
       const res = await arr_sort_dec();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -165,6 +172,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await ll_insert_front(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -184,6 +192,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await ll_insert_end(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -203,6 +212,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await ll_delete(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -222,6 +232,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await ll_search(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -240,6 +251,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await bst_insert(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -259,6 +271,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await bst_delete(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -278,6 +291,7 @@ export default function StaticView() {
       const num = validateInput(input);
       const res = await bst_search(num);
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -296,6 +310,7 @@ export default function StaticView() {
       setError("");
       const res = await llToArray();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -313,6 +328,7 @@ export default function StaticView() {
       setError("");
       const res = await llToBST();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -330,6 +346,7 @@ export default function StaticView() {
       setError("");
       const res = await arrayToLL();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -347,6 +364,7 @@ export default function StaticView() {
       setError("");
       const res = await arrayToBST();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -364,6 +382,7 @@ export default function StaticView() {
       setError("");
       const res = await bstToArray();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -381,6 +400,7 @@ export default function StaticView() {
       setError("");
       const res = await bstToLL();
       setArray(res.array || []);
+      setTree(res.tree || null);
       setOpName(res.op || "");
       setOpDetail(res.detail || "");
       setOpTime(res.time || "");
@@ -402,7 +422,6 @@ export default function StaticView() {
         {["array", "linkedlist", "bst"].map((key) => (
           <button
             key={key}
-            onClick={() => setActiveTab(key)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
               activeTab === key
                 ? "bg-indigo-500 text-white"
@@ -609,7 +628,7 @@ export default function StaticView() {
 
         {activeTab === "array" && <ArrayView values={array} />}
         {activeTab === "linkedlist" && <LinkedListView values={array} />}
-        {activeTab === "bst" && <BSTView values={array} />}
+        {activeTab === "bst" && <BSTView values={array} tree={tree} />}
 
         {searchResult !== null && !error && (
           <div className="mt-4 p-2 rounded bg-stone-700">
