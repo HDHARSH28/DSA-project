@@ -1,8 +1,11 @@
 import axios from "axios";
 const BASE_URL = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
-
 export async function ll_insert_front(value) {
   const res = await axios.post(`${BASE_URL}/ll/insert_front`, { value });
+  return res.data;
+}
+export async function ll_insert_end(value) {
+  const res = await axios.post(`${BASE_URL}/ll/insert_end`, { value });
   return res.data;
 }
 export async function ll_delete(value) {
@@ -24,6 +27,16 @@ export async function arr_delete(value) {
 }
 export async function arr_search(value) {
   const res = await axios.post(`${BASE_URL}/arr/search`, { value });
+  return res.data;
+}
+
+export async function arr_sort_inc() {
+  const res = await axios.post(`${BASE_URL}/arr/sort_inc`);
+  return res.data;
+}
+
+export async function arr_sort_dec() {
+  const res = await axios.post(`${BASE_URL}/arr/sort_dec`);
   return res.data;
 }
 
@@ -71,7 +84,6 @@ export async function getFrontDatabase() {
   const res = await axios.get(`${BASE_URL}/frontend/array`);
   return res.data;
 }
-
 // ---------------- Dynamic (Generic) Data Structure Endpoints ----------------
 // These endpoints allow operations on a backend-managed dynamic structure
 // that can internally switch between array / linked list / bst.
@@ -96,7 +108,9 @@ export async function dy_remove(index) {
 }
 
 export async function dy_search(value) {
-  const res = await axios.get(`${BASE_URL}/dy/search/${encodeURIComponent(value)}`);
+  const res = await axios.get(
+    `${BASE_URL}/dy/search/${encodeURIComponent(value)}`
+  );
   return res.data; // { found, type }
 }
 
@@ -104,4 +118,3 @@ export async function dy_sort(order = "asc") {
   const res = await axios.post(`${BASE_URL}/dy/sort`, { order });
   return res.data; // { data, type, order }
 }
-

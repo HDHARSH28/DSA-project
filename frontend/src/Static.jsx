@@ -123,39 +123,19 @@ export default function StaticView() {
   };
 
   const handleArraySortInc = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    try { setLoading(true); setError("");
       const res = await arr_sort_inc();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
 
   const handleArraySortDec = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    try { setLoading(true); setError("");
       const res = await arr_sort_dec();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
   const handleLLInsert = async () => {
     try {
@@ -171,23 +151,12 @@ export default function StaticView() {
     }
   };
   const handleLLEndInsert = async () => {
-    try {
-      setLoading(true);
-      setError("");
+    try { setLoading(true); setError("");
       const num = validateInput(input);
       const res = await ll_insert_end(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
   const handleLLDelete = async () => {
     try {
