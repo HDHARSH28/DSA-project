@@ -1,55 +1,22 @@
 import React, { useState, useEffect } from "react";
+import ArrayView from "./components/ArrayView.jsx";
+import LinkedListView from "./components/LinkedListView.jsx";
+import BSTView from "./components/BSTView.jsx";
+import { dy_all, dy_insert, dy_remove, dy_search, dy_sort } from "./utils.js";
 
-// Simple visualizer components for array, linked list, BST
-function ArrayView({ values }) {
-  return (
-    <div className="flex gap-2 flex-wrap mt-2">
-      {values.map((v, i) => (
-        <div
-          key={i}
-          className="px-3 py-2 rounded bg-indigo-700/80 text-white font-mono"
-        >
-          {v}
-        </div>
-      ))}
-    </div>
-  );
-}
-function LinkedListView({ values }) {
-  return (
-    <div className="flex items-center gap-2 flex-wrap mt-2">
-      {values.map((v, i) => (
-        <React.Fragment key={i}>
-          <div className="px-3 py-2 rounded bg-purple-700/80 text-white font-mono">
-            {v}
-          </div>
-          {i !== values.length - 1 && (
-            <span className="text-purple-300 font-bold">&rarr;</span>
-          )}
-        </React.Fragment>
-      ))}
-    </div>
-  );
-}
-function BSTView({ values }) {
-  // Just show in-order array for simplicity
-  return (
-    <div className="flex gap-2 flex-wrap mt-2">
-      {values.map((v, i) => (
-        <div
-          key={i}
-          className="px-3 py-2 rounded bg-green-700/80 text-white font-mono"
-        >
-          {v}
-        </div>
-      ))}
-    </div>
-  );
-}
+// Utility: maps dsType to a component
+const visualizerMap = {
+  array: ArrayView,
+  linkedlist: LinkedListView,
+  bst: BSTView,
+};
+
+// Helper to coerce input string to number if numeric
+const coerceValue = (val) => (val === "" ? "" : isNaN(val) ? val : Number(val));
 
 export default function DynamicView() {
-  const [data, setData] = useState([]);
-  const [dsType, setDsType] = useState("");
+  const [array, setArray] = useState([]); // renamed from data for consistency
+  const [activeTab, setActiveTab] = useState(""); // renamed from dsType
   const [input, setInput] = useState("");
   const [index, setIndex] = useState("");
   const [searchValue, setSearchValue] = useState("");
@@ -59,67 +26,57 @@ export default function DynamicView() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-
-  // Fetch all data on mount and after any operation
-  const fetchAll = async () => {
-    try {
-      setLoading(true);
-      setError("");
-      // UPDATED: Use the new /dy/all endpoint
-      const res = await fetch("http://localhost:3000/dy/all"); 
-      const json = await res.json();
-      setData(json.data);
-      setDsType(json.type);
-    } catch {
-      setError("Failed to fetch data from backend");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAll();
-  }, []);
-
-  const recordEvent = (evt) => {
+  // Event recorder (plain function – no useCallback needed)
+  function recordEvent(evt) {
     if (!evt) return;
     setEvents((p) => [evt, ...p].slice(0, 200));
+  }
+
+  // Unified state updater after a data-changing operation
+  function applyDataResponse(res, op, detail) {
+    if (res?.data) setArray(res.data);
+    if (res?.type) setActiveTab(res.type);
+    if (op) setOpName(op);
+    if (detail) setOpDetail(detail);
+    recordEvent({ op, detail, array: res?.data });
+  }
+
+  // Initial fetch
+  useEffect(() => {
+    (async () => {
+      try {
+        setLoading(true);
+        setError("");
+        const res = await dy_all();
+        applyDataResponse(res, "Init", "Fetched initial structure");
+      } catch {
+        setError("Failed to fetch data from backend");
+      } finally {
+        setLoading(false);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // No dependency on helper function references since they are stable in intent
+
+  const guard = (cond, msg) => {
+    if (cond) return true;
+    setError(msg);
+    return false;
   };
 
   const handleInsert = async () => {
-    if (input === "") {
-      setError("Please enter a value");
-      return;
-    }
+    if (!guard(input !== "", "Please enter a value")) return;
     setLoading(true);
     setError("");
     try {
-      // UPDATED: Use the new /dy/insert endpoint
-      const res = await fetch("http://localhost:3000/dy/insert", { 
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          value: isNaN(input) ? input : Number(input),
-          index: index === "" ? undefined : Number(index),
-        }),
-      });
-      const json = await res.json();
-      setData(json.data);
-      setDsType(json.type);
-      setOpName("Insert");
-      setOpDetail(
-        index === ""
-          ? `Inserted ${input} at end`
-          : `Inserted ${input} at index ${index}`
-      );
-      recordEvent({
-        op: "Insert",
-        detail:
-          index === ""
-            ? `Inserted ${input} at end`
-            : `Inserted ${input} at index ${index}`,
-        array: json.data,
-      });
+      const coerced = coerceValue(input);
+      const idx = index === "" ? undefined : Number(index);
+      const res = await dy_insert(coerced, idx);
+      const detail =
+        idx === undefined
+          ? `Inserted ${coerced} at end`
+          : `Inserted ${coerced} at index ${idx}`;
+      applyDataResponse(res, "Insert", detail);
       setInput("");
       setIndex("");
       setSearchResult(null);
@@ -131,31 +88,13 @@ export default function DynamicView() {
   };
 
   const handleRemove = async () => {
-    if (index === "") {
-      setError("Please enter an index to remove");
-      return;
-    }
+    if (!guard(index !== "", "Please enter an index to remove")) return;
     setLoading(true);
     setError("");
     try {
-      // UPDATED: Use the new /dy/remove endpoint
-      const res = await fetch("http://localhost:3000/dy/remove", { 
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        // Note: The backend uses a POST body even though the method is DELETE. 
-        // We ensure the body is present for the index.
-        body: JSON.stringify({ index: Number(index) }),
-      });
-      const json = await res.json();
-      setData(json.data);
-      setDsType(json.type);
-      setOpName("Remove");
-      setOpDetail(`Removed value at index ${index}`);
-      recordEvent({
-        op: "Remove",
-        detail: `Removed value at index ${index}`,
-        array: json.data,
-      });
+      const idx = Number(index);
+      const res = await dy_remove(idx);
+      applyDataResponse(res, "Remove", `Removed value at index ${idx}`);
       setIndex("");
       setSearchResult(null);
     } catch {
@@ -166,33 +105,20 @@ export default function DynamicView() {
   };
 
   const handleSearch = async () => {
-    if (searchValue === "") {
-      setError("Please enter a value to search");
-      return;
-    }
+    if (!guard(searchValue !== "", "Please enter a value to search")) return;
     setLoading(true);
     setError("");
     try {
-      // UPDATED: Use the new /dy/search/:value endpoint
-      const res = await fetch(
-        `http://localhost:3000/dy/search/${encodeURIComponent(searchValue)}` 
-      );
-      const json = await res.json();
-      setDsType(json.type);
+      const res = await dy_search(searchValue);
+      setActiveTab(res.type);
+      const found = res.found;
+      const detail = found
+        ? `Found ${searchValue} in structure`
+        : `Did not find ${searchValue}`;
       setOpName("Search");
-      setOpDetail(
-        json.found
-          ? `Found ${searchValue} in structure`
-          : `Did not find ${searchValue}`
-      );
-      setSearchResult(json.found);
-      recordEvent({
-        op: "Search",
-        detail: json.found
-          ? `Found ${searchValue} in structure`
-          : `Did not find ${searchValue}`,
-        array: data,
-      });
+      setOpDetail(detail);
+      setSearchResult(found);
+      recordEvent({ op: "Search", detail, array });
     } catch {
       setError("Search failed");
     } finally {
@@ -204,21 +130,11 @@ export default function DynamicView() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:3000/dy/sort", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ order: direction }),
-      });
-      const json = await res.json();
-      setData(json.data);
-      setDsType(json.type);
-      setOpName("Sort");
-      setOpDetail(`Sorted ${json.order === "desc" ? "descending" : "ascending"}`);
-      recordEvent({
-        op: "Sort",
-        detail: `Sorted ${json.order === "desc" ? "descending" : "ascending"}`,
-        array: json.data,
-      });
+      const res = await dy_sort(direction);
+      const detail = `Sorted ${
+        res.order === "desc" ? "descending" : "ascending"
+      }`;
+      applyDataResponse(res, "Sort", detail);
       setSearchResult(null);
     } catch {
       setError("Sort failed");
@@ -227,10 +143,7 @@ export default function DynamicView() {
     }
   };
 
-  // Visualizer selection
-  let Visualizer = ArrayView;
-  if (dsType === "linkedlist") Visualizer = LinkedListView;
-  if (dsType === "bst") Visualizer = BSTView;
+  const Visualizer = visualizerMap[activeTab] || ArrayView;
 
   return (
     <div className="w-full">
@@ -239,11 +152,21 @@ export default function DynamicView() {
       </h1>
       <div className="mb-4">
         <span className="font-semibold text-stone-300">Current Structure:</span>{" "}
-        <span className="text-purple-200">{dsType}</span>
+        <span className="text-purple-200">{activeTab}</span>
       </div>
-      <div className="mb-6">
-        <span className="font-semibold text-stone-300">Contents:</span>{" "}
-        <span className="text-stone-200">{JSON.stringify(data)}</span>
+      <div className="mb-6 flex flex-wrap items-center gap-6">
+        <div>
+          <span className="font-semibold text-stone-300">Length:</span>{" "}
+          <span className="text-stone-200">{array.length}</span>
+        </div>
+        <div className="truncate max-w-full">
+          <span className="font-semibold text-stone-300">Preview:</span>{" "}
+          <span className="text-stone-200 font-mono text-sm">
+            [
+            {array.slice(0, 8).join(", ")}
+            {array.length > 8 ? " …" : ""}]
+          </span>
+        </div>
       </div>
 
       {error && (
@@ -339,7 +262,9 @@ export default function DynamicView() {
             Sort Desc
           </button>
         </div>
-        <Visualizer values={data} />
+        <div className="mt-2">
+          <Visualizer values={array} />
+        </div>
         {searchResult !== null && !error && (
           <div className="mt-4 p-2 rounded bg-stone-700">
             <span className="font-semibold">Search Result: </span>

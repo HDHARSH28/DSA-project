@@ -71,3 +71,37 @@ export async function getFrontDatabase() {
   const res = await axios.get(`${BASE_URL}/frontend/array`);
   return res.data;
 }
+
+// ---------------- Dynamic (Generic) Data Structure Endpoints ----------------
+// These endpoints allow operations on a backend-managed dynamic structure
+// that can internally switch between array / linked list / bst.
+// All functions return the raw .data payload from the backend.
+
+export async function dy_all() {
+  const res = await axios.get(`${BASE_URL}/dy/all`);
+  return res.data; // { data: [...], type }
+}
+
+export async function dy_insert(value, index) {
+  const payload = { value };
+  if (index !== undefined && index !== null) payload.index = index;
+  const res = await axios.post(`${BASE_URL}/dy/insert`, payload);
+  return res.data; // { data, type }
+}
+
+export async function dy_remove(index) {
+  // Backend expects DELETE with body; axios supports body via 'data' field
+  const res = await axios.delete(`${BASE_URL}/dy/remove`, { data: { index } });
+  return res.data; // { data, type }
+}
+
+export async function dy_search(value) {
+  const res = await axios.get(`${BASE_URL}/dy/search/${encodeURIComponent(value)}`);
+  return res.data; // { found, type }
+}
+
+export async function dy_sort(order = "asc") {
+  const res = await axios.post(`${BASE_URL}/dy/sort`, { order });
+  return res.data; // { data, type, order }
+}
+

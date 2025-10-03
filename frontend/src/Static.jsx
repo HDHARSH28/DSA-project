@@ -62,6 +62,21 @@ export default function StaticView() {
     if (!evt) return;
     setEvents((p) => [evt, ...p].slice(0, 200));
   };
+
+  // Unified state updater similar to DynamicView's applyDataResponse
+  // res: backend response object containing: array, op, detail, time
+  // options: { clearInput: boolean, nextTab: string, resetSearch: boolean }
+  function applyDataResponse(res, options = {}) {
+    if (res?.array) setArray(res.array);
+    if (res?.op) setOpName(res.op);
+    if (res?.detail) setOpDetail(res.detail);
+    if (res?.time) setOpTime(res.time);
+    recordEvent(res);
+    const { clearInput = false, nextTab, resetSearch = false } = options;
+    if (clearInput) setInput("");
+    if (resetSearch) setSearchResult(null);
+    if (nextTab) setActiveTab(nextTab);
+  }
   // --- Explicit handlers (simple, one by one) ---
   const handleArrayPush = async () => {
     try {
@@ -69,13 +84,7 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await arr_push(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -88,13 +97,7 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await arr_delete(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -107,12 +110,8 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await arr_search(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
+      applyDataResponse(res);
       setSearchResult(res.detail?.startsWith("found") || false);
-      recordEvent(res);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -125,13 +124,7 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await ll_insert_front(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -144,13 +137,7 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await ll_delete(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -163,12 +150,8 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await ll_search(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
+      applyDataResponse(res);
       setSearchResult(res.detail?.startsWith("found") || false);
-      recordEvent(res);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -181,13 +164,7 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await bst_insert(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -200,13 +177,7 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await bst_delete(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -219,12 +190,8 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await bst_search(num);
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
+      applyDataResponse(res);
       setSearchResult(res.detail?.startsWith("found") || false);
-      recordEvent(res);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -237,12 +204,7 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await llToArray();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("array");
+      applyDataResponse(res, { nextTab: "array" });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -254,12 +216,7 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await llToBST();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("bst");
+      applyDataResponse(res, { nextTab: "bst" });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -271,12 +228,7 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await arrayToLL();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("linkedlist");
+      applyDataResponse(res, { nextTab: "linkedlist" });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -288,12 +240,7 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await arrayToBST();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("bst");
+      applyDataResponse(res, { nextTab: "bst" });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -305,12 +252,7 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await bstToArray();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("array");
+      applyDataResponse(res, { nextTab: "array" });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -322,12 +264,7 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await bstToLL();
-      setArray(res.array || []);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("linkedlist");
+      applyDataResponse(res, { nextTab: "linkedlist" });
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
