@@ -25,6 +25,11 @@ app.post('/ll/insert_front', (req, res) => {
   res.json(ds.ll_insert_front(value));
 });
 
+app.post('/ll/insert_end', (req, res) => {
+  const { value } = req.body;
+  res.json(ds.ll_insert_end(value));
+});
+
 app.post('/ll/delete', (req, res) => {
   const { value } = req.body;
   res.json(ds.ll_delete(value));
@@ -49,6 +54,14 @@ app.post('/arr/delete', (req, res) => {
 app.post('/arr/search', (req, res) => {
   const { value } = req.body;
   res.json(ds.arr_search(value));
+});
+
+app.post('/arr/sort_inc', (req, res) => {
+  res.json(ds.arr_sort_inc());
+});
+
+app.post('/arr/sort_dec', (req, res) => {
+  res.json(ds.arr_sort_dec());
 });
 
 // ---------- BST Endpoints ----------

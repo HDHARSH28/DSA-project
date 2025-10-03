@@ -32,6 +32,22 @@ class Wrapper {
     return this._emit("LL_INSERT", "success (inserted at ll_head)", end - start);
   }
 
+  ll_insert_end(value) {
+    const start = performance.now();
+    const node = this._LLNode(value);
+    if (!this.ll_head) {
+      this.ll_head = node;
+    } else {
+      let cur = this.ll_head;
+      while (cur.next) cur = cur.next;
+      cur.next = node;
+    }
+    const end = performance.now();
+    // Update front_database outside timing
+    this.front_database.push(value);
+    return this._emit("LL_INSERT", "success (inserted at tail)", end - start);
+  }
+
   ll_search(value) {
     const start = performance.now();
     let cur = this.ll_head;
@@ -123,6 +139,24 @@ class Wrapper {
 
     const end = performance.now();
     return this._emit("ARR_SEARCH", "not found", end - start);
+  }
+
+  arr_sort_inc() {
+    const start = performance.now();
+    this.arr.sort((a, b) => a - b);
+    const end = performance.now();
+    // Update front_database to match sorted array
+    this.front_database = [...this.arr];
+    return this._emit("ARR_SORT_INC", "sorted in increasing order", end - start);
+  }
+
+  arr_sort_dec() {
+    const start = performance.now();
+    this.arr.sort((a, b) => b - a);
+    const end = performance.now();
+    // Update front_database to match sorted array
+    this.front_database = [...this.arr];
+    return this._emit("ARR_SORT_DEC", "sorted in decreasing order", end - start);
   }
 
   // ---------- BST Operations ----------
