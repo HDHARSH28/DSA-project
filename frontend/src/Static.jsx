@@ -26,6 +26,7 @@ import {
 
 export default function StaticView() {
   const [array, setArray] = useState([]);
+  const [tree, setTree] = useState(null);
   const [input, setInput] = useState("");
   const [searchResult, setSearchResult] = useState(null);
   const [opName, setOpName] = useState("");
@@ -53,6 +54,7 @@ export default function StaticView() {
     try {
       const res = await getFrontDatabase();
       setArray(res.array || []);
+      setTree(res.tree || null);
     } catch {
       setError("Failed to fetch data");
     }
@@ -65,21 +67,6 @@ export default function StaticView() {
     if (!evt) return;
     setEvents((p) => [evt, ...p].slice(0, 200));
   };
-
-  // Unified state updater similar to DynamicView's applyDataResponse
-  // res: backend response object containing: array, op, detail, time
-  // options: { clearInput: boolean, nextTab: string, resetSearch: boolean }
-  function applyDataResponse(res, options = {}) {
-    if (res?.array) setArray(res.array);
-    if (res?.op) setOpName(res.op);
-    if (res?.detail) setOpDetail(res.detail);
-    if (res?.time) setOpTime(res.time);
-    recordEvent(res);
-    const { clearInput = false, nextTab, resetSearch = false } = options;
-    if (clearInput) setInput("");
-    if (resetSearch) setSearchResult(null);
-    if (nextTab) setActiveTab(nextTab);
-  }
   // --- Explicit handlers (simple, one by one) ---
   const handleArrayPush = async () => {
     try {
@@ -87,7 +74,14 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await arr_push(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -100,7 +94,14 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await arr_delete(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -113,8 +114,13 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await arr_search(num);
-      applyDataResponse(res);
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
       setSearchResult(res.detail?.startsWith("found") || false);
+      recordEvent(res);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -123,19 +129,41 @@ export default function StaticView() {
   };
 
   const handleArraySortInc = async () => {
-    try { setLoading(true); setError("");
+    try {
+      setLoading(true);
+      setError("");
       const res = await arr_sort_inc();
-      applyDataResponse(res, { resetSearch: true });
-    } catch (e) { setError(e.message || "An error occurred"); }
-    finally { setLoading(false); }
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setSearchResult(null);
+    } catch (e) {
+      setError(e.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleArraySortDec = async () => {
-    try { setLoading(true); setError("");
+    try {
+      setLoading(true);
+      setError("");
       const res = await arr_sort_dec();
-      applyDataResponse(res, { resetSearch: true });
-    } catch (e) { setError(e.message || "An error occurred"); }
-    finally { setLoading(false); }
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setSearchResult(null);
+    } catch (e) {
+      setError(e.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
   const handleLLInsert = async () => {
     try {
@@ -143,7 +171,14 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await ll_insert_front(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -151,12 +186,24 @@ export default function StaticView() {
     }
   };
   const handleLLEndInsert = async () => {
-    try { setLoading(true); setError("");
+    try {
+      setLoading(true);
+      setError("");
       const num = validateInput(input);
       const res = await ll_insert_end(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
-    } catch (e) { setError(e.message || "An error occurred"); }
-    finally { setLoading(false); }
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
+    } catch (e) {
+      setError(e.message || "An error occurred");
+    } finally {
+      setLoading(false);
+    }
   };
   const handleLLDelete = async () => {
     try {
@@ -164,7 +211,14 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await ll_delete(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -177,8 +231,13 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await ll_search(num);
-      applyDataResponse(res);
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
       setSearchResult(res.detail?.startsWith("found") || false);
+      recordEvent(res);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -191,7 +250,14 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await bst_insert(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -204,7 +270,14 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await bst_delete(num);
-      applyDataResponse(res, { clearInput: true, resetSearch: true });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setInput("");
+      setSearchResult(null);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -217,8 +290,13 @@ export default function StaticView() {
       setError("");
       const num = validateInput(input);
       const res = await bst_search(num);
-      applyDataResponse(res);
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
       setSearchResult(res.detail?.startsWith("found") || false);
+      recordEvent(res);
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -231,7 +309,13 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await llToArray();
-      applyDataResponse(res, { nextTab: "array" });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("array");
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -243,7 +327,13 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await llToBST();
-      applyDataResponse(res, { nextTab: "bst" });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("bst");
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -255,7 +345,13 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await arrayToLL();
-      applyDataResponse(res, { nextTab: "linkedlist" });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("linkedlist");
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -267,7 +363,13 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await arrayToBST();
-      applyDataResponse(res, { nextTab: "bst" });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("bst");
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -279,7 +381,13 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await bstToArray();
-      applyDataResponse(res, { nextTab: "array" });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("array");
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -291,7 +399,13 @@ export default function StaticView() {
       setLoading(true);
       setError("");
       const res = await bstToLL();
-      applyDataResponse(res, { nextTab: "linkedlist" });
+      setArray(res.array || []);
+      setTree(res.tree || null);
+      setOpName(res.op || "");
+      setOpDetail(res.detail || "");
+      setOpTime(res.time || "");
+      recordEvent(res);
+      setActiveTab("linkedlist");
     } catch (e) {
       setError(e.message || "An error occurred");
     } finally {
@@ -308,7 +422,6 @@ export default function StaticView() {
         {["array", "linkedlist", "bst"].map((key) => (
           <button
             key={key}
-            onClick={() => setActiveTab(key)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
               activeTab === key
                 ? "bg-indigo-500 text-white"
@@ -515,7 +628,7 @@ export default function StaticView() {
 
         {activeTab === "array" && <ArrayView values={array} />}
         {activeTab === "linkedlist" && <LinkedListView values={array} />}
-        {activeTab === "bst" && <BSTView values={array} />}
+        {activeTab === "bst" && <BSTView values={array} tree={tree} />}
 
         {searchResult !== null && !error && (
           <div className="mt-4 p-2 rounded bg-stone-700">
