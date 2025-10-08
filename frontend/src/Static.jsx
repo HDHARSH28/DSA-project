@@ -67,350 +67,197 @@ export default function StaticView() {
     if (!evt) return;
     setEvents((p) => [evt, ...p].slice(0, 200));
   };
-  // --- Explicit handlers (simple, one by one) ---
+
+  // Unified updater
+  function applyDataResponse(res, options = {}) {
+    if (res?.array) setArray(res.array);
+    if (res?.tree !== undefined) setTree(res.tree);
+    if (res?.op) setOpName(res.op);
+    if (res?.detail) setOpDetail(res.detail);
+    if (res?.time) setOpTime(res.time);
+    recordEvent(res);
+
+    const { clearInput = false, nextTab, resetSearch = false } = options;
+    if (clearInput) setInput("");
+    if (resetSearch) setSearchResult(null);
+    if (nextTab) setActiveTab(nextTab);
+  }
+
+  // Handlers
   const handleArrayPush = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await arr_push(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleArrayDelete = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await arr_delete(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleArraySearch = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await arr_search(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
+      applyDataResponse(res);
       setSearchResult(res.detail?.startsWith("found") || false);
-      recordEvent(res);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
 
   const handleArraySortInc = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await arr_sort_inc();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
 
   const handleArraySortDec = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await arr_sort_dec();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleLLInsert = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await ll_insert_front(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleLLEndInsert = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await ll_insert_end(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleLLDelete = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await ll_delete(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleLLSearch = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await ll_search(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
+      applyDataResponse(res);
       setSearchResult(res.detail?.startsWith("found") || false);
-      recordEvent(res);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleBSTInsert = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await bst_insert(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleBSTDelete = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await bst_delete(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setInput("");
-      setSearchResult(null);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleBSTSearch = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const num = validateInput(input);
       const res = await bst_search(num);
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
+      applyDataResponse(res);
       setSearchResult(res.detail?.startsWith("found") || false);
-      recordEvent(res);
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
-  // conversions
+
+  // Conversions
   const handleLLToArray = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await llToArray();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("array");
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { nextTab: "array" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleLLToBST = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await llToBST();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("bst");
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { nextTab: "bst" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleArrayToLL = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await arrayToLL();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("linkedlist");
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { nextTab: "linkedlist" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleArrayToBST = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await arrayToBST();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("bst");
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { nextTab: "bst" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleBSTToArray = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await bstToArray();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("array");
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { nextTab: "array" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
+
   const handleBSTToLL = async () => {
     try {
-      setLoading(true);
-      setError("");
+      setLoading(true); setError("");
       const res = await bstToLL();
-      setArray(res.array || []);
-      setTree(res.tree || null);
-      setOpName(res.op || "");
-      setOpDetail(res.detail || "");
-      setOpTime(res.time || "");
-      recordEvent(res);
-      setActiveTab("linkedlist");
-    } catch (e) {
-      setError(e.message || "An error occurred");
-    } finally {
-      setLoading(false);
-    }
+      applyDataResponse(res, { nextTab: "linkedlist" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
   };
 
   return (
@@ -422,6 +269,7 @@ export default function StaticView() {
         {["array", "linkedlist", "bst"].map((key) => (
           <button
             key={key}
+            onClick={() => setActiveTab(key)}
             className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
               activeTab === key
                 ? "bg-indigo-500 text-white"
@@ -488,140 +336,32 @@ export default function StaticView() {
         <div className="flex gap-2 mb-4 flex-wrap">
           {activeTab === "array" && (
             <>
-              <button
-                onClick={handleArrayPush}
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                Push
-              </button>
-              <button
-                onClick={handleArrayDelete}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Delete
-              </button>
-              <button
-                onClick={handleArraySearch}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Search
-              </button>
-              <button
-                onClick={handleArraySortInc}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Sort ↑
-              </button>
-              <button
-                onClick={handleArraySortDec}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Sort ↓
-              </button>
-              <button
-                onClick={handleArrayToLL}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Array→LL
-              </button>
-              <button
-                onClick={handleArrayToBST}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Array→BST
-              </button>
+              <button onClick={handleArrayPush} className="btn btn-primary" disabled={loading}>Push</button>
+              <button onClick={handleArrayDelete} className="btn btn-secondary" disabled={loading}>Delete</button>
+              <button onClick={handleArraySearch} className="btn btn-secondary" disabled={loading}>Search</button>
+              <button onClick={handleArraySortInc} className="btn btn-secondary" disabled={loading}>Sort ↑</button>
+              <button onClick={handleArraySortDec} className="btn btn-secondary" disabled={loading}>Sort ↓</button>
+              <button onClick={handleArrayToLL} className="btn btn-secondary" disabled={loading}>Array→LL</button>
+              <button onClick={handleArrayToBST} className="btn btn-secondary" disabled={loading}>Array→BST</button>
             </>
           )}
           {activeTab === "linkedlist" && (
             <>
-              <button
-                onClick={handleLLInsert}
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                Insert Front
-              </button>
-              <button
-                onClick={handleLLEndInsert}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Insert End
-              </button>
-              <button
-                onClick={handleLLDelete}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Delete
-              </button>
-              <button
-                onClick={handleLLSearch}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Search
-              </button>
-              <button
-                onClick={handleLLToArray}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                LL→Array
-              </button>
-              <button
-                onClick={handleLLToBST}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                LL→BST
-              </button>
+              <button onClick={handleLLInsert} className="btn btn-primary" disabled={loading}>Insert Front</button>
+              <button onClick={handleLLEndInsert} className="btn btn-secondary" disabled={loading}>Insert End</button>
+              <button onClick={handleLLDelete} className="btn btn-secondary" disabled={loading}>Delete</button>
+              <button onClick={handleLLSearch} className="btn btn-secondary" disabled={loading}>Search</button>
+              <button onClick={handleLLToArray} className="btn btn-secondary" disabled={loading}>LL→Array</button>
+              <button onClick={handleLLToBST} className="btn btn-secondary" disabled={loading}>LL→BST</button>
             </>
           )}
           {activeTab === "bst" && (
             <>
-              <button
-                onClick={handleBSTInsert}
-                className="btn btn-primary"
-                disabled={loading}
-              >
-                Insert
-              </button>
-              <button
-                onClick={handleBSTDelete}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Delete
-              </button>
-              <button
-                onClick={handleBSTSearch}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                Search
-              </button>
-              <button
-                onClick={handleBSTToArray}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                BST→Array
-              </button>
-              <button
-                onClick={handleBSTToLL}
-                className="btn btn-secondary"
-                disabled={loading}
-              >
-                BST→LL
-              </button>
+              <button onClick={handleBSTInsert} className="btn btn-primary" disabled={loading}>Insert</button>
+              <button onClick={handleBSTDelete} className="btn btn-secondary" disabled={loading}>Delete</button>
+              <button onClick={handleBSTSearch} className="btn btn-secondary" disabled={loading}>Search</button>
+              <button onClick={handleBSTToArray} className="btn btn-secondary" disabled={loading}>BST→Array</button>
+              <button onClick={handleBSTToLL} className="btn btn-secondary" disabled={loading}>BST→LL</button>
             </>
           )}
         </div>

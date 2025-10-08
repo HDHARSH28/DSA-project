@@ -16,7 +16,9 @@ function computeLayout(root) {
     if (node.left) {
       links.push({ fromKey: key, toKey: leftKey });
       dfs(node.left, depth + 1, leftKey);
+
     }
+
     xCounter += 1;
     nodes.push({ key, value: node.value, depth, xIndex: xCounter });
     if (node.right) {
