@@ -15,8 +15,9 @@ class Wrapper {
   }
 
   // ---------- BST Node Helper ----------
+  // Added height field for AVL tree balancing
   _BSTNode(value) {
-    return { value: value, left: null, right: null };
+    return { value: value, left: null, right: null, height: 1 };
   }
 
   // ---------- Linked List Operations ----------
@@ -202,40 +203,118 @@ class Wrapper {
   bst_delete(value) {
     const start = performance.now();
     let deleted = false;
-    
-    const deleteNode = (node, value) => {
+
+    // AVL delete implementation that sets deleted flag when a node is removed
+    const _height = (node) => (node ? node.height : 0);
+    const _getBalance = (node) => (node ? _height(node.left) - _height(node.right) : 0);
+
+    const _rightRotate = (y) => {
+      const x = y.left;
+      const T2 = x.right;
+
+      // Perform rotation
+      x.right = y;
+      y.left = T2;
+
+      // Update heights
+      y.height = Math.max(_height(y.left), _height(y.right)) + 1;
+      x.height = Math.max(_height(x.left), _height(x.right)) + 1;
+
+      return x;
+    };
+
+    const _leftRotate = (x) => {
+      const y = x.right;
+      const T2 = y.left;
+
+      // Perform rotation
+      y.left = x;
+      x.right = T2;
+
+      // Update heights
+      x.height = Math.max(_height(x.left), _height(x.right)) + 1;
+      y.height = Math.max(_height(y.left), _height(y.right)) + 1;
+
+      return y;
+    };
+
+    const _minValueNode = (node) => {
+      let current = node;
+      while (current.left) current = current.left;
+      return current;
+    };
+
+    const deleteAVL = (node, value) => {
       if (!node) return null;
-      if (value < node.value) node.left = deleteNode(node.left, value);
-      else if (value > node.value) node.right = deleteNode(node.right, value);
-      else {
-        // Node to delete found (value === node.value)
-        deleted = true; // Mark as deleted before checking children
-        
-        // Case 1: No left child (or no children at all)
-        if (!node.left) return node.right;
-        
-        // Case 2: No right child
-        if (!node.right) return node.left;
-        
-        // Case 3: Node with two children: get inorder successor (smallest in right subtree)
-        let succ = node.right;
-        while (succ.left) succ = succ.left;
-        
-        // Copy the successor's value to this node
-        node.value = succ.value;
-        
-        // Delete the successor from the right subtree
-        node.right = deleteNode(node.right, succ.value);
+
+      if (value < node.value) {
+        node.left = deleteAVL(node.left, value);
+      } else if (value > node.value) {
+        node.right = deleteAVL(node.right, value);
+      } else {
+        // Node to be deleted found
+        deleted = true;
+
+        // node with only one child or no child
+        if (!node.left || !node.right) {
+          const temp = node.left ? node.left : node.right;
+          if (!temp) {
+            // no child
+            node = null;
+          } else {
+            // one child
+            node = temp;
+          }
+        } else {
+          // node with two children: get the inorder successor (smallest in the right subtree)
+          const temp = _minValueNode(node.right);
+          // Copy the inorder successor's data to this node
+          node.value = temp.value;
+          // Delete the inorder successor
+          node.right = deleteAVL(node.right, temp.value);
+        }
       }
+
+      // If the tree had only one node then return
+      if (!node) return node;
+
+      // Update height
+      node.height = Math.max(_height(node.left), _height(node.right)) + 1;
+
+      // Get balance
+      const balance = _getBalance(node);
+
+      // Left Left Case
+      if (balance > 1 && _getBalance(node.left) >= 0) {
+        return _rightRotate(node);
+      }
+
+      // Left Right Case
+      if (balance > 1 && _getBalance(node.left) < 0) {
+        node.left = _leftRotate(node.left);
+        return _rightRotate(node);
+      }
+
+      // Right Right Case
+      if (balance < -1 && _getBalance(node.right) <= 0) {
+        return _leftRotate(node);
+      }
+
+      // Right Left Case
+      if (balance < -1 && _getBalance(node.right) > 0) {
+        node.right = _rightRotate(node.right);
+        return _leftRotate(node);
+      }
+
       return node;
     };
-    
-    this.bst_root = deleteNode(this.bst_root, value);
+
+    this.bst_root = deleteAVL(this.bst_root, value);
     const end = performance.now();
-    
+
     // Update front_database for BST (inorder traversal)
     this.front_database = this._bst_inorder();
-    
+
     // Check if deletion happened using the 'deleted' flag
     if (deleted)
       return this._emit("BST_DELETE", "success", end - start);
@@ -352,11 +431,69 @@ class Wrapper {
   }
 
   // Helper for BST insertion (used by insert and converters)
+  // Replaced with AVL insertion to keep tree balanced
   _insertBSTNode(node, value) {
+    // AVL insert
+    const _height = (n) => (n ? n.height : 0);
+    const _getBalance = (n) => (n ? _height(n.left) - _height(n.right) : 0);
+
+    const _rightRotate = (y) => {
+      const x = y.left;
+      const T2 = x.right;
+      x.right = y;
+      y.left = T2;
+      y.height = Math.max(_height(y.left), _height(y.right)) + 1;
+      x.height = Math.max(_height(x.left), _height(x.right)) + 1;
+      return x;
+    };
+
+    const _leftRotate = (x) => {
+      const y = x.right;
+      const T2 = y.left;
+      y.left = x;
+      x.right = T2;
+      x.height = Math.max(_height(x.left), _height(x.right)) + 1;
+      y.height = Math.max(_height(y.left), _height(y.right)) + 1;
+      return y;
+    };
+
+    // Standard BST insert
     if (!node) return this._BSTNode(value);
+
     if (value <= node.value) node.left = this._insertBSTNode(node.left, value);
-    else if (value > node.value)
-      node.right = this._insertBSTNode(node.right, value);
+    else if (value > node.value) node.right = this._insertBSTNode(node.right, value);
+    else return node; // equal values handled by <= branch, but keep safe
+
+    // Update height
+    node.height = 1 + Math.max(_height(node.left), _height(node.right));
+
+    // Get balance factor
+    const balance = _getBalance(node);
+
+    // If node becomes unbalanced, then 4 cases
+
+    // Left Left
+    if (balance > 1 && value <= node.left.value) {
+      return _rightRotate(node);
+    }
+
+    // Left Right
+    if (balance > 1 && value > node.left.value) {
+      node.left = _leftRotate(node.left);
+      return _rightRotate(node);
+    }
+
+    // Right Right
+    if (balance < -1 && value > node.right.value) {
+      return _leftRotate(node);
+    }
+
+    // Right Left
+    if (balance < -1 && value <= node.right.value) {
+      node.right = _rightRotate(node.right);
+      return _leftRotate(node);
+    }
+
     return node;
   }
 
