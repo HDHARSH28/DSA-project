@@ -1,7 +1,7 @@
 // ---------- server.js ----------
 
 const express = require('express');
-const bodyParser = require('body-parser');
+// use built-in express JSON parser instead of external body-parser
 const cors = require('cors');
 const Wrapper = require('./static.js'); // Static DS logic
 const DynamicDS = require('./dynamic.js'); // Dynamic DS logic
@@ -11,7 +11,7 @@ const ds = new Wrapper(); // Static DS instance
 const dynamicDS = new DynamicDS(); // Dynamic DS instance
 
 app.use(cors());
-app.use(bodyParser.json());
+app.use(express.json());
 
 const PORT = 3000;
 
@@ -82,7 +82,7 @@ app.post('/bst/delete', (req, res) => {
 
 // ---------- Converter Endpoints ----------
 app.post('/convert/arrayToLL', (req, res) => {
-  r = ds.arrayToLL();
+  const r = ds.arrayToLL();
   console.log(r);
   res.json(r);
 });

@@ -41,7 +41,7 @@ export default function StaticView() {
     setSearchResult(null);
     setInput("");
     setError("");
-  }, [activeTab]);
+  }, []);
 
   const validateInput = (value) => {
     if (!value.trim()) throw new Error("Please enter a value");
