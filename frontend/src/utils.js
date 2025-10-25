@@ -102,7 +102,6 @@ export async function dy_insert(value, index) {
 }
 
 export async function dy_remove(index) {
-  // Backend expects DELETE with body; axios supports body via 'data' field
   const res = await axios.delete(`${BASE_URL}/dy/remove`, { data: { index } });
   return res.data; // { data, type }
 }
