@@ -117,3 +117,18 @@ export async function dy_sort(order = "asc") {
   const res = await axios.post(`${BASE_URL}/dy/sort`, { order });
   return res.data; // { data, type, order }
 }
+
+export async function dy_bulkAdd(count, min = 0, max = 1000) {
+  const res = await axios.post(`${BASE_URL}/dy/bulk-add`, { count, min, max });
+  return res.data; // { data, type, added }
+}
+
+export async function dy_clear() {
+  const res = await axios.post(`${BASE_URL}/dy/clear`);
+  return res.data; // { data, type }
+}
+
+export async function dy_state() {
+  const res = await axios.get(`${BASE_URL}/dy/state`);
+  return res.data; // { type, size, history, nextType }
+}
