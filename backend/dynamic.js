@@ -242,12 +242,12 @@ class DynamicDS {
   }
   _choosePreferredType() {
     const size = this._size();
-    const counts = { index: 0, search: 0, insert_delete: 0 };
+    const counts = { index: 0, search: 0, insert: 0 };
     for (const o of this.opHistory) counts[o] = (counts[o] || 0) + 1;
     // Frequency-based override first
     if (counts.search >= 3) return "bst";
     if (counts.index >= 3) return "array";
-    if (counts.insert_delete >= 3) return "linkedlist";
+    if (counts.insert >= 3) return "linkedlist";
     // Size-based default
     if (size < 100) return "array";
     if (size < 1000) return "linkedlist";
@@ -291,7 +291,7 @@ class DynamicDS {
         this._convertTo("array");
         this.ds.push(value);
       }
-      this._record("insert_delete");
+      this._record("insert");
     }
     this._reconsider();
     return this.getAll();
@@ -354,7 +354,7 @@ class DynamicDS {
     this.ds = new ArrayDS(arr);
     // push multiple inserts into history (cap to 5)
     const pushes = Math.min(5, Math.ceil(c / 2));
-    for (let i = 0; i < pushes; i++) this._record("insert_delete");
+    for (let i = 0; i < pushes; i++) this._record("insert");
     this._reconsider();
     return this.getAll();
   }
@@ -371,6 +371,14 @@ class DynamicDS {
   }
   getType() {
     return this.type;
+  }
+
+  getTree() {
+    // Return the actual tree structure for BST visualization
+    if (this.type === "bst" && this.ds.root) {
+      return this.ds.root;
+    }
+    return null;
   }
 
   getState() {
