@@ -16,6 +16,7 @@ const coerceValue = (val) => (val === "" ? "" : isNaN(val) ? val : Number(val));
 
 export default function DynamicView() {
   const [array, setArray] = useState([]); // renamed from data for consistency
+  const [tree, setTree] = useState(null); // BST tree structure
   const [activeTab, setActiveTab] = useState(""); // renamed from dsType
   const [input, setInput] = useState("");
   const [index, setIndex] = useState("");
@@ -38,6 +39,7 @@ export default function DynamicView() {
   // Unified state updater after a data-changing operation
   function applyDataResponse(res, op, detail) {
     if (res?.data) setArray(res.data);
+    if (res?.tree !== undefined) setTree(res.tree);
     if (res?.type) setActiveTab(res.type);
     if (op) setOpName(op);
     if (detail) setOpDetail(detail);
@@ -127,15 +129,12 @@ export default function DynamicView() {
     setError("");
     try {
       const res = await dy_search(searchValue);
-      setActiveTab(res.type);
       const found = res.found;
       const detail = found
         ? `Found ${searchValue} in structure`
         : `Did not find ${searchValue}`;
-      setOpName("Search");
-      setOpDetail(detail);
+      applyDataResponse(res, "Search", detail);
       setSearchResult(found);
-      recordEvent({ op: "Search", detail, array });
     } catch {
       setError("Search failed");
     } finally {
@@ -346,7 +345,11 @@ export default function DynamicView() {
           </button>
         </div>
         <div className="mt-2">
-          <Visualizer values={array} />
+          {activeTab === "bst" ? (
+            <Visualizer tree={tree} />
+          ) : (
+            <Visualizer values={array} />
+          )}
         </div>
         {searchResult !== null && !error && (
           <div className="mt-4 p-2 rounded bg-stone-700">
