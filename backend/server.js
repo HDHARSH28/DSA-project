@@ -124,14 +124,22 @@ app.get("/frontend/array", (req, res) => {
 app.post("/dy/insert", (req, res) => {
   const { index, value } = req.body;
   dynamicDS.insertAt(index, value);
-  res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
+  res.json({ 
+    data: dynamicDS.getAll(), 
+    type: dynamicDS.getType(),
+    tree: dynamicDS.getTree()
+  });
 });
 
 // Dynamic Remove: Uses LinkedList removeAt
 app.delete("/dy/remove", (req, res) => {
   const { index } = req.body;
   dynamicDS.removeAt(index);
-  res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
+  res.json({ 
+    data: dynamicDS.getAll(), 
+    type: dynamicDS.getType(),
+    tree: dynamicDS.getTree()
+  });
 });
 
 // Dynamic Search: Uses BST search
@@ -147,7 +155,12 @@ app.get("/dy/search/:value", (req, res) => {
   }
 
   const found = dynamicDS.search(value);
-  res.json({ found, type: dynamicDS.getType() });
+  res.json({ 
+    found, 
+    type: dynamicDS.getType(),
+    data: dynamicDS.getAll(),
+    tree: dynamicDS.getTree()
+  });
 });
 
 // State: report type, size, history, nextType
@@ -157,7 +170,11 @@ app.get("/dy/state", (req, res) => {
 
 // Dynamic Get All: Returns current data and type
 app.get("/dy/all", (req, res) => {
-  res.json({ data: dynamicDS.getAll(), type: dynamicDS.getType() });
+  res.json({ 
+    data: dynamicDS.getAll(), 
+    type: dynamicDS.getType(),
+    tree: dynamicDS.getTree()
+  });
 });
 
 // Dynamic Sort: Sorts current data; preserves DS type while rebuilding
@@ -167,6 +184,7 @@ app.post("/dy/sort", (req, res) => {
   res.json({
     data,
     type: dynamicDS.getType(),
+    tree: dynamicDS.getTree(),
     order: order === "desc" ? "desc" : "asc",
   });
 });
@@ -180,6 +198,7 @@ app.post("/dy/bulk-add", (req, res) => {
   res.json({
     data,
     type: dynamicDS.getType(),
+    tree: dynamicDS.getTree(),
     added: Math.max(0, after - before),
   });
 });
@@ -187,7 +206,11 @@ app.post("/dy/bulk-add", (req, res) => {
 // Optional: clear all data
 app.post("/dy/clear", (req, res) => {
   const data = dynamicDS.clear();
-  res.json({ data, type: dynamicDS.getType() });
+  res.json({ 
+    data, 
+    type: dynamicDS.getType(),
+    tree: dynamicDS.getTree()
+  });
 });
 
 // =======================================================
