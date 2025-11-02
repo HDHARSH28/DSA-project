@@ -190,31 +190,67 @@ export default function DynamicView() {
   const Visualizer = visualizerMap[activeTab] || ArrayView;
 
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-300">
-        DS Visualizer (Dynamic)
-      </h1>
-      <div className="mb-4 grid gap-3 sm:grid-cols-2">
-        <div className="p-3 rounded bg-stone-800 border border-stone-700">
-          <div className="font-semibold text-stone-300">Current Structure</div>
-          <div className="text-purple-200 text-lg font-bold">{activeTab || "array"}</div>
-          <div className="text-sm text-stone-400">Next preferred: <span className="text-indigo-300">{nextType || ""}</span></div>
+    <div className="w-full animate-fade-in">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+          Dynamic Visualizer
+        </h1>
+        <p className="text-stone-400">Watch structures morph based on operations</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="stat-card from-indigo-500/10 to-purple-500/10 border-indigo-500/30">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1">Current Structure</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-purple-300 to-indigo-300 bg-clip-text text-transparent">
+                {activeTab || "array"}
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
+              </svg>
+            </div>
+          </div>
+          {nextType && (
+            <div className="mt-3 pt-3 border-t border-white/10">
+              <span className="text-xs text-stone-400">Next preferred:</span>
+              <span className="ml-2 badge badge-primary">{nextType}</span>
+            </div>
+          )}
         </div>
-        <div className="p-3 rounded bg-stone-800 border border-stone-700">
-          <div className="font-semibold text-stone-300">Size</div>
-          <div className="text-emerald-200 text-lg font-bold">{dsSize ?? array.length}</div>
-          <div className="text-sm text-stone-400">Last 5 ops:
-            <span className="ml-2 flex flex-wrap gap-1 mt-1">
-              {history.length === 0 ? (
-                <span className="text-stone-500">(none)</span>
-              ) : (
-                history.map((h, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded text-xs bg-stone-700 border border-stone-600 text-stone-200">
-                    {h}
-                  </span>
-                ))
-              )}
-            </span>
+
+        <div className="stat-card from-emerald-500/10 to-teal-500/10 border-emerald-500/30">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-1">Size</div>
+              <div className="text-2xl font-bold bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                {dsSize ?? array.length}
+              </div>
+            </div>
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+              <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div className="stat-card from-amber-500/10 to-orange-500/10 border-amber-500/30 sm:col-span-2 lg:col-span-1">
+          <div className="text-xs font-semibold text-stone-400 uppercase tracking-wide mb-2">Recent Operations</div>
+          <div className="flex flex-wrap gap-1.5">
+            {history.length === 0 ? (
+              <span className="text-stone-500 text-sm italic">No operations yet</span>
+            ) : (
+              history.map((h, i) => (
+                <span key={i} className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  {h}
+                </span>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -229,154 +265,249 @@ export default function DynamicView() {
         </div>
       </div>
 
+      {/* Error Alert */}
       {error && (
-        <div className="mb-4 p-3 rounded bg-red-900/30 border border-red-700 text-red-300">
-          <span className="font-semibold">Error:</span> {error}
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-red-900/40 to-pink-900/40 border-2 border-red-600/50 animate-fade-in shadow-lg shadow-red-900/20">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <span className="font-bold text-red-300 block mb-1">Error</span>
+              <span className="text-red-200">{error}</span>
+            </div>
+          </div>
         </div>
       )}
 
+      {/* Operation Feedback */}
       {(opDetail || opName) && !error && (
-        <div className="mb-4 p-3 rounded bg-stone-800 border border-stone-700">
-          <span className="font-semibold text-indigo-400">Operation:</span>{" "}
-          {opName && (
-            <span className="font-mono text-xs bg-stone-700 px-2 py-0.5 rounded mr-2 text-indigo-300">
-              {opName}
-            </span>
-          )}
-          <span>{opDetail}</span>
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-900/30 to-purple-900/30 border border-indigo-600/40 animate-fade-in backdrop-blur-sm">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <span className="font-bold text-indigo-300 block mb-1">Operation Complete</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {opName && (
+                  <span className="badge badge-primary font-mono">
+                    {opName}
+                  </span>
+                )}
+                <span className="text-stone-300">{opDetail}</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="mb-6 card bg-stone-800 p-4">
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            className="border border-stone-600 bg-stone-700 rounded-md px-3 py-2 text-stone-100 placeholder-stone-400 focus:border-indigo-500 focus:outline-none min-w-[120px]"
-            placeholder="Value"
-            disabled={loading}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !loading) handleInsert();
-            }}
-          />
-          <input
-            value={index}
-            onChange={(e) => setIndex(e.target.value)}
-            className="border border-stone-600 bg-stone-700 rounded-md px-3 py-2 text-stone-100 placeholder-stone-400 focus:border-indigo-500 focus:outline-none min-w-[120px]"
-            placeholder="Index (for insert/remove)"
-            disabled={loading}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !loading) handleInsert();
-            }}
-          />
-          <button
-            onClick={handleInsert}
-            className="btn btn-primary"
-            disabled={loading}
-            type="button"
-          >
-            Insert
-          </button>
-          <button
-            onClick={handleRemove}
-            className="btn btn-secondary"
-            disabled={loading}
-            type="button"
-          >
-            Remove
-          </button>
-          <button
-            onClick={handleClear}
-            className="btn btn-secondary"
-            disabled={loading}
-            type="button"
-          >
-            Clear
-          </button>
-        </div>
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <span className="text-stone-300">Quick add:</span>
-          {[10, 50, 100, 1000].map((n) => (
+      {/* Control Panel */}
+      <div className="mb-6 card p-6">
+        <h3 className="text-lg font-bold text-stone-200 mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          Control Panel
+        </h3>
+
+        {/* Primary Actions */}
+        <div className="space-y-4">
+          <div className="flex gap-3 flex-wrap items-end">
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Value</label>
+              <input
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                className="input-modern w-full"
+                placeholder="Enter value"
+                disabled={loading}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !loading) handleInsert();
+                }}
+              />
+            </div>
+            <div className="flex-1 min-w-[150px]">
+              <label className="block text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Index (optional)</label>
+              <input
+                value={index}
+                onChange={(e) => setIndex(e.target.value)}
+                className="input-modern w-full"
+                placeholder="Position"
+                disabled={loading}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !loading) handleInsert();
+                }}
+              />
+            </div>
             <button
-              key={n}
-              onClick={() => handleBulkAdd(n)}
+              onClick={handleInsert}
+              className="btn btn-primary"
+              disabled={loading}
+              type="button"
+            >
+              <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              Insert
+            </button>
+            <button
+              onClick={handleRemove}
               className="btn btn-secondary"
               disabled={loading}
               type="button"
             >
-              +{n}
+              <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+              </svg>
+              Remove
             </button>
-          ))}
+            <button
+              onClick={handleClear}
+              className="btn btn-danger"
+              disabled={loading}
+              type="button"
+            >
+              <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              Clear
+            </button>
+          </div>
+
+          {/* Bulk Operations */}
+          <div className="pt-4 border-t border-stone-700/50">
+            <label className="block text-xs font-semibold text-stone-400 mb-3 uppercase tracking-wide">Quick Add</label>
+            <div className="flex gap-2 flex-wrap">
+              {[10, 50, 100, 1000].map((n) => (
+                <button
+                  key={n}
+                  onClick={() => handleBulkAdd(n)}
+                  className="btn btn-success"
+                  disabled={loading}
+                  type="button"
+                >
+                  <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  +{n}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Search and Sort */}
+          <div className="pt-4 border-t border-stone-700/50">
+            <div className="flex gap-3 flex-wrap items-end">
+              <div className="flex-1 min-w-[200px]">
+                <label className="block text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Search Value</label>
+                <input
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  className="input-modern w-full"
+                  placeholder="Value to find"
+                  disabled={loading}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !loading) handleSearch();
+                  }}
+                />
+              </div>
+              <button
+                onClick={handleSearch}
+                className="btn btn-secondary"
+                disabled={loading}
+                type="button"
+              >
+                <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Search
+              </button>
+              <button
+                onClick={() => handleSort("asc")}
+                className="btn btn-secondary"
+                disabled={loading}
+                type="button"
+              >
+                <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12" />
+                </svg>
+                Sort ↑
+              </button>
+              <button
+                onClick={() => handleSort("desc")}
+                className="btn btn-secondary"
+                disabled={loading}
+                type="button"
+              >
+                <svg className="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4h13M3 8h9m-9 4h9m5-4v12m0 0l-4-4m4 4l4-4" />
+                </svg>
+                Sort ↓
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2 mb-4 flex-wrap">
-          <input
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="border border-stone-600 bg-stone-700 rounded-md px-3 py-2 text-stone-100 placeholder-stone-400 focus:border-indigo-500 focus:outline-none min-w-[120px]"
-            placeholder="Value to search"
-            disabled={loading}
-            onKeyDown={(e) => {
-              if (e.key === "Enter" && !loading) handleSearch();
-            }}
-          />
-          <button
-            onClick={handleSearch}
-            className="btn btn-secondary"
-            disabled={loading}
-            type="button"
-          >
-            Search
-          </button>
-          <button
-            onClick={() => handleSort("asc")}
-            className="btn btn-secondary"
-            disabled={loading}
-            type="button"
-          >
-            Sort Asc
-          </button>
-          <button
-            onClick={() => handleSort("desc")}
-            className="btn btn-secondary"
-            disabled={loading}
-            type="button"
-          >
-            Sort Desc
-          </button>
-        </div>
-        <div className="mt-2">
+        {/* Visualizer */}
+        <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-stone-900/50 to-stone-800/50 border border-stone-700/50">
           {activeTab === "bst" ? (
             <Visualizer tree={tree} />
           ) : (
             <Visualizer values={array} />
           )}
         </div>
+
+        {/* Search Result */}
         {searchResult !== null && !error && (
-          <div className="mt-4 p-2 rounded bg-stone-700">
-            <span className="font-semibold">Search Result: </span>
-            <span className={searchResult ? "text-green-400" : "text-red-400"}>
-              {searchResult ? "Found" : "Not Found"}
-            </span>
+          <div className={`mt-4 p-4 rounded-xl border-2 ${
+            searchResult 
+              ? 'bg-emerald-900/30 border-emerald-600/50' 
+              : 'bg-red-900/30 border-red-600/50'
+          } animate-fade-in`}>
+            <div className="flex items-center gap-3">
+              {searchResult ? (
+                <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              <div>
+                <span className="font-semibold">Search Result: </span>
+                <span className={searchResult ? "text-emerald-300 font-bold" : "text-red-300 font-bold"}>
+                  {searchResult ? "Found ✓" : "Not Found"}
+                </span>
+              </div>
+            </div>
           </div>
         )}
+        {/* Event Log */}
         {events.length > 0 && (
           <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-2 text-indigo-300">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-stone-200">
+              <svg className="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
               Event Log
+              <span className="badge badge-primary ml-auto">{events.length}</span>
             </h2>
-            <div className="max-h-64 overflow-auto border border-stone-700 rounded bg-stone-900/40 text-sm divide-y divide-stone-800">
+            <div className="max-h-80 overflow-auto border border-stone-700/50 rounded-xl bg-stone-900/40 text-sm divide-y divide-stone-800/50 backdrop-blur-sm custom-scrollbar">
               {events.map((e, i) => (
                 <div
                   key={i}
-                  className="px-3 py-2 flex flex-col sm:flex-row sm:items-center gap-1"
+                  className="px-4 py-3 hover:bg-stone-800/30 transition-colors duration-200"
                 >
-                  <span className="text-indigo-400 font-mono text-xs sm:text-[11px] tracking-wide">
-                    {e.op}
-                  </span>
-                  <span className="flex-1 text-stone-300">{e.detail}</span>
-                  <span className="text-stone-500 font-mono text-[10px] hidden md:inline">
-                    [{e.array?.join(", ")}]
-                  </span>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="badge badge-primary font-mono text-[11px]">
+                      {e.op}
+                    </span>
+                    <span className="flex-1 text-stone-300">{e.detail}</span>
+                    <span className="text-stone-500 font-mono text-[10px] hidden lg:inline">
+                      [{e.array?.slice(0, 10).join(", ")}{e.array?.length > 10 ? "..." : ""}]
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
