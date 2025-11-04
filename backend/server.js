@@ -40,14 +40,6 @@ app.post("/ll/search", (req, res) => {
   res.json(ds.ll_search(value));
 });
 
-app.post("/ll/sort_inc", (req, res) => {
-  res.json(ds.ll_sort_inc());
-});
-
-app.post("/ll/sort_dec", (req, res) => {
-  res.json(ds.ll_sort_dec());
-});
-
 // ---------- Array Endpoints ----------
 app.post("/arr/push", (req, res) => {
   const { value } = req.body;
@@ -165,6 +157,23 @@ app.get("/dy/search/:value", (req, res) => {
   const found = dynamicDS.search(value);
   res.json({ 
     found, 
+    type: dynamicDS.getType(),
+    data: dynamicDS.getAll(),
+    tree: dynamicDS.getTree()
+  });
+});
+
+// Dynamic Access by Index: Track index access operations
+app.get("/dy/access/:index", (req, res) => {
+  const index = parseInt(req.params.index);
+  if (isNaN(index) || index < 0) {
+    return res.status(400).json({ error: "Invalid index" });
+  }
+  
+  const value = dynamicDS.accessByIndex(index);
+  res.json({ 
+    value,
+    index,
     type: dynamicDS.getType(),
     data: dynamicDS.getAll(),
     tree: dynamicDS.getTree()
