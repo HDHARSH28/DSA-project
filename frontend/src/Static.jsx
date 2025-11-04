@@ -13,6 +13,8 @@ import {
   ll_delete,
   ll_search,
   ll_insert_end,
+  ll_sort_inc,
+  ll_sort_dec,
   llToArray,
   getFrontDatabase,
   bst_insert,
@@ -497,3 +499,4 @@ export default function StaticView() {
     </div>
   );
 }
+
