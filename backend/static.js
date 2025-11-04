@@ -115,11 +115,18 @@ class Wrapper {
       cur = cur.next;
     }
     values.sort((a, b) => a - b);
+    
     // Rebuild linked list from sorted values
     this.ll_head = null;
     for (let i = values.length - 1; i >= 0; i--) {
-      this.ll_insert_front(values[i]);
+      const node = this._LLNode(values[i]);
+      node.next = this.ll_head;
+      this.ll_head = node;
     }
+    
+    // Update front_database
+    this.front_database = [...values];
+    
     const end = performance.now();
     return this._emit("LL_SORT_INC", "sorted in increasing order", end - start);
   }
@@ -134,15 +141,21 @@ class Wrapper {
       cur = cur.next;
     }
     values.sort((a, b) => b - a);
+    
     // Rebuild linked list from sorted values
     this.ll_head = null;
     for (let i = values.length - 1; i >= 0; i--) {
-      this.ll_insert_front(values[i]);
+      const node = this._LLNode(values[i]);
+      node.next = this.ll_head;
+      this.ll_head = node;
     }
+    
+    // Update front_database
+    this.front_database = [...values];
+    
     const end = performance.now();
     return this._emit("LL_SORT_DEC", "sorted in decreasing order", end - start);
   }
-
   // ---------- Dynamic Array Operations ----------
 
   arr_push(value) {
@@ -547,3 +560,4 @@ class Wrapper {
 }
 
 module.exports = Wrapper;
+
