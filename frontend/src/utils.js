@@ -113,6 +113,13 @@ export async function dy_search(value) {
   return res.data; // { found, type }
 }
 
+export async function dy_access(index) {
+  const res = await axios.get(
+    `${BASE_URL}/dy/access/${encodeURIComponent(index)}`
+  );
+  return res.data; // { value, index, type }
+}
+
 export async function dy_sort(order = "asc") {
   const res = await axios.post(`${BASE_URL}/dy/sort`, { order });
   return res.data; // { data, type, order }

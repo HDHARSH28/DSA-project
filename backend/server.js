@@ -163,6 +163,23 @@ app.get("/dy/search/:value", (req, res) => {
   });
 });
 
+// Dynamic Access by Index: Track index access operations
+app.get("/dy/access/:index", (req, res) => {
+  const index = parseInt(req.params.index);
+  if (isNaN(index) || index < 0) {
+    return res.status(400).json({ error: "Invalid index" });
+  }
+  
+  const value = dynamicDS.accessByIndex(index);
+  res.json({ 
+    value,
+    index,
+    type: dynamicDS.getType(),
+    data: dynamicDS.getAll(),
+    tree: dynamicDS.getTree()
+  });
+});
+
 // State: report type, size, history, nextType
 app.get("/dy/state", (req, res) => {
   res.json(dynamicDS.getState());
