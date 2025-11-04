@@ -40,6 +40,17 @@ app.post("/ll/search", (req, res) => {
   res.json(ds.ll_search(value));
 });
 
+// Linked List Sort Endpoints (increasing / decreasing)
+app.post("/ll/sort_inc", (req, res) => {
+  const r = ds.ll_sort_inc();
+  res.json(r);
+});
+
+app.post("/ll/sort_dec", (req, res) => {
+  const r = ds.ll_sort_dec();
+  res.json(r);
+});
+
 // ---------- Array Endpoints ----------
 app.post("/arr/push", (req, res) => {
   const { value } = req.body;
