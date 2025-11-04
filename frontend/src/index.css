@@ -1,0 +1,176 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-20px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 20px 4px rgba(99, 102, 241, 0.3); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Smooth scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-stone-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-stone-700 rounded-full;
+  transition: background 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-stone-600;
+}
+
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #44403c #1c1917;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #1c1917;
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #44403c;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #57534e;
+}
+
+/* App-level tweaks */
+.btn {
+  @apply px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-300;
+  @apply shadow-lg hover:shadow-xl transform hover:scale-105 active:scale-95;
+}
+
+.btn:disabled {
+  @apply opacity-50 cursor-not-allowed transform-none shadow-none;
+}
+
+.btn-primary {
+  @apply bg-gradient-to-r from-indigo-500 to-purple-600 text-white;
+  @apply hover:from-indigo-600 hover:to-purple-700;
+  @apply focus:ring-4 focus:ring-indigo-500/50;
+}
+
+.btn-primary:disabled {
+  @apply from-indigo-500/50 to-purple-600/50;
+}
+
+.btn-secondary {
+  @apply bg-gradient-to-br from-stone-700 to-stone-800 text-stone-100;
+  @apply hover:from-stone-600 hover:to-stone-700;
+  @apply border border-stone-600/50;
+}
+
+.btn-secondary:disabled {
+  @apply from-stone-700/50 to-stone-800/50;
+}
+
+.btn-danger {
+  @apply bg-gradient-to-r from-red-600 to-pink-600 text-white;
+  @apply hover:from-red-700 hover:to-pink-700;
+  @apply focus:ring-4 focus:ring-red-500/50;
+}
+
+.btn-success {
+  @apply bg-gradient-to-r from-emerald-500 to-teal-600 text-white;
+  @apply hover:from-emerald-600 hover:to-teal-700;
+  @apply focus:ring-4 focus:ring-emerald-500/50;
+}
+
+.card {
+  @apply bg-gradient-to-br from-stone-800/90 to-stone-900/90;
+  @apply rounded-2xl shadow-2xl border border-stone-700/50;
+  @apply text-stone-100 backdrop-blur-sm;
+  @apply transition-all duration-300;
+}
+
+.card:hover {
+  @apply shadow-indigo-500/10 border-stone-600/70;
+}
+
+.glass-card {
+  @apply bg-white/5 backdrop-blur-md border border-white/10;
+  @apply rounded-2xl shadow-2xl;
+}
+
+.input-modern {
+  @apply border-2 border-stone-600 bg-stone-800/50 rounded-xl;
+  @apply px-4 py-2.5 text-stone-100 placeholder-stone-400;
+  @apply focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/20;
+  @apply focus:outline-none transition-all duration-300;
+  @apply backdrop-blur-sm;
+}
+
+.input-modern:focus {
+  @apply bg-stone-800/80;
+}
+
+.stat-card {
+  @apply p-4 rounded-xl bg-gradient-to-br;
+  @apply border border-white/10 backdrop-blur-sm;
+  @apply transition-all duration-300 hover:scale-105;
+  @apply shadow-lg hover:shadow-2xl;
+}
+
+.badge {
+  @apply px-3 py-1 rounded-full text-xs font-bold;
+  @apply backdrop-blur-sm border;
+}
+
+.badge-primary {
+  @apply bg-indigo-500/20 text-indigo-300 border-indigo-500/30;
+}
+
+.badge-success {
+  @apply bg-emerald-500/20 text-emerald-300 border-emerald-500/30;
+}
+
+.badge-warning {
+  @apply bg-amber-500/20 text-amber-300 border-amber-500/30;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.animate-slide-in {
+  animation: slideInRight 0.4s ease-out;
+}
+
+/* Dark text defaults */
+body { 
+  @apply text-stone-200 bg-stone-950;
+  @apply antialiased;
+}
