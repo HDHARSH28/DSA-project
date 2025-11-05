@@ -5,6 +5,7 @@ import DynamicView from "./Dynamic";
 
 function App() {
   const [mode, setMode] = useState("static");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const contentVariants = {
     hidden: { opacity: 0, y: 20 },
@@ -28,8 +29,21 @@ function App() {
         <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
       </div>
 
-      {/* Modern Sidebar */}
-      <aside className="w-64 h-full border-r border-stone-800/50 backdrop-blur-xl bg-stone-950/40 p-6 flex flex-col gap-6 shadow-2xl">
+      {/* Mobile Top Bar */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-30 flex items-center justify-between px-4 py-3 border-b border-stone-800/50 bg-stone-950/70 backdrop-blur-xl">
+        <div className="flex items-center gap-2">
+          <button aria-label="Open menu" onClick={() => setSidebarOpen(true)} className="p-2 rounded-lg border border-stone-700/60 bg-stone-900/60 hover:bg-stone-800 transition">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-stone-300">Menu</span>
+        </div>
+        <span className="text-sm text-stone-400 capitalize">{mode} mode</span>
+      </div>
+
+      {/* Sidebar */}
+      <aside className={`fixed lg:static z-40 h-full w-64 border-r border-stone-800/50 backdrop-blur-xl bg-stone-950/40 p-6 flex flex-col gap-6 shadow-2xl transform transition-transform duration-300 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         {/* Logo/Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -51,6 +65,13 @@ function App() {
             </div>
           </div>
         </motion.div>
+
+        {/* Close on Mobile */}
+        <div className="lg:hidden -mt-2 -mb-2">
+          <button aria-label="Close menu" onClick={() => setSidebarOpen(false)} className="px-3 py-2 rounded-lg border border-stone-700/60 bg-stone-900/60 hover:bg-stone-800 text-stone-300 text-xs font-medium transition">
+            Close
+          </button>
+        </div>
 
         {/* Mode Selection */}
         <div className="flex flex-col gap-3">
@@ -130,8 +151,13 @@ function App() {
         </motion.div>
       </aside>
 
+      {/* Overlay for Mobile Sidebar */}
+      {sidebarOpen && (
+        <div className="lg:hidden fixed inset-0 z-30 bg-black/50" onClick={() => setSidebarOpen(false)}></div>
+      )}
+
       {/* Main Content */}
-      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto relative z-10 custom-scrollbar">
+      <main className="flex-1 p-4 sm:p-6 lg:p-8 overflow-y-auto relative z-10 custom-scrollbar w-full lg:ml-0 pt-16 lg:pt-0">
         <AnimatePresence mode="wait">
           <motion.div
             key={mode}
