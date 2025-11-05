@@ -59,7 +59,7 @@ function App() {
             </div>
             <div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-indigo-300 to-purple-300 bg-clip-text text-transparent">
-                DS Visualizer
+                MorphoStructDB
               </h1>
               <p className="text-xs text-stone-400">Interactive Explorer</p>
             </div>
