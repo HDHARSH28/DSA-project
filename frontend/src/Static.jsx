@@ -13,6 +13,8 @@ import {
   ll_delete,
   ll_search,
   ll_insert_end,
+  ll_sort_inc,
+  ll_sort_dec,
   llToArray,
   getFrontDatabase,
   bst_insert,
@@ -174,6 +176,24 @@ export default function StaticView() {
     finally { setLoading(false); }
   };
 
+  const handleLLSortInc = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await ll_sort_inc();
+      applyDataResponse(res, { resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleLLSortDec = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await ll_sort_dec();
+      applyDataResponse(res, { resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
   const handleBSTInsert = async () => {
     try {
       setLoading(true); setError("");
@@ -261,60 +281,103 @@ export default function StaticView() {
   };
 
   return (
-    <div className="w-full">
-      <h1 className="text-3xl font-bold mb-6 text-indigo-300">
-        DS Visualizer (Static)
-      </h1>
-      <div className="mb-4 flex gap-4">
-        {["array", "linkedlist", "bst"].map((key) => (
+    <div className="w-full animate-fade-in">
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-indigo-400 bg-clip-text text-transparent">
+          Static Explorer
+        </h1>
+        <p className="text-stone-400">Explore fixed data structures with manual operations</p>
+      </div>
+
+      {/* Structure Selector */}
+      <div className="mb-6 p-2 rounded-xl bg-stone-800/50 border border-stone-700/50 inline-flex gap-2">
+        {[
+          { key: "array", label: "Array", icon: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" },
+          { key: "linkedlist", label: "Linked List", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
+          { key: "bst", label: "BST", icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" }
+        ].map(({ key, label, icon }) => (
           <button
             key={key}
             onClick={() => setActiveTab(key)}
-            className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+            className={`relative px-5 py-3 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2 ${
               activeTab === key
-                ? "bg-indigo-500 text-white"
-                : "bg-stone-700 text-stone-300 hover:bg-stone-600"
+                ? "bg-gradient-to-r from-indigo-600 to-blue-600 text-white shadow-lg shadow-indigo-500/50 scale-105"
+                : "text-stone-400 hover:text-stone-200 hover:bg-stone-700/50"
             }`}
           >
-            {key === "array"
-              ? "Array"
-              : key === "linkedlist"
-              ? "Linked List"
-              : "BST"}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={icon} />
+            </svg>
+            {label}
           </button>
         ))}
       </div>
 
+      {/* Error Alert */}
       {error && (
-        <div className="mb-4 p-3 rounded bg-red-900/30 border border-red-700 text-red-300">
-          <span className="font-semibold">Error:</span> {error}
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-red-900/40 to-pink-900/40 border-2 border-red-600/50 animate-fade-in shadow-lg shadow-red-900/20">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div>
+              <span className="font-bold text-red-300 block mb-1">Error</span>
+              <span className="text-red-200">{error}</span>
+            </div>
+          </div>
         </div>
       )}
 
+      {/* Operation Feedback */}
       {(opDetail || opName) && !error && (
-        <div className="mb-4 p-3 rounded bg-stone-800 border border-stone-700">
-          <span className="font-semibold text-indigo-400">Operation:</span>{" "}
-          {opName && (
-            <span className="font-mono text-xs bg-stone-700 px-2 py-0.5 rounded mr-2 text-indigo-300">
-              {opName}
-            </span>
-          )}
-          <span>{opDetail}</span>
-          {opTime && (
-            <span className="ml-4">
-              <span className="font-semibold text-green-400">Time:</span>{" "}
-              {opTime}
-            </span>
-          )}
+        <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-indigo-900/30 to-cyan-900/30 border border-indigo-600/40 animate-fade-in backdrop-blur-sm">
+          <div className="flex items-start gap-3">
+            <svg className="w-6 h-6 text-indigo-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <span className="font-bold text-indigo-300 block mb-1">Operation Complete</span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {opName && (
+                  <span className="badge badge-primary font-mono">
+                    {opName}
+                  </span>
+                )}
+                <span className="text-stone-300">{opDetail}</span>
+                {opTime && (
+                  <span className="badge badge-success ml-auto">
+                    ⚡ {opTime}
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
-      <div className="mb-6 card bg-stone-800 p-4">
-        <div className="flex gap-2 mb-4 flex-wrap">
+      {/* Control Panel */}
+      <div className="mb-6 card p-6">
+        <h3 className="text-lg font-bold text-stone-200 mb-4 flex items-center gap-2">
+          <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+          </svg>
+          Control Panel
+          {loading && (
+            <div className="flex items-center ml-auto gap-2 text-cyan-400">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-cyan-400 border-t-transparent"></div>
+              <span className="text-sm">Processing...</span>
+            </div>
+          )}
+        </h3>
+
+        {/* Input Section */}
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">Input Value</label>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            className="border border-stone-600 bg-stone-700 rounded-md px-3 py-2 text-stone-100 placeholder-stone-400 focus:border-indigo-500 focus:outline-none min-w-[120px]"
+            className="input-modern w-full max-w-md"
             placeholder="Enter number"
             disabled={loading}
             onKeyDown={(e) => {
@@ -325,15 +388,10 @@ export default function StaticView() {
               }
             }}
           />
-          {loading && (
-            <div className="flex items-center px-3 py-2 text-indigo-400">
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-indigo-400"></div>
-              <span className="ml-2">Processing...</span>
-            </div>
-          )}
         </div>
 
-        <div className="flex gap-2 mb-4 flex-wrap">
+        {/* Action Buttons */}
+        <div className="flex gap-2 flex-wrap">
           {activeTab === "array" && (
             <>
               <button onClick={handleArrayPush} className="btn btn-primary" disabled={loading}>Push</button>
@@ -351,6 +409,8 @@ export default function StaticView() {
               <button onClick={handleLLEndInsert} className="btn btn-secondary" disabled={loading}>Insert End</button>
               <button onClick={handleLLDelete} className="btn btn-secondary" disabled={loading}>Delete</button>
               <button onClick={handleLLSearch} className="btn btn-secondary" disabled={loading}>Search</button>
+              <button onClick={handleLLSortInc} className="btn btn-secondary" disabled={loading}>Sort ↑</button>
+              <button onClick={handleLLSortDec} className="btn btn-secondary" disabled={loading}>Sort ↓</button>
               <button onClick={handleLLToArray} className="btn btn-secondary" disabled={loading}>LL→Array</button>
               <button onClick={handleLLToBST} className="btn btn-secondary" disabled={loading}>LL→BST</button>
             </>
@@ -366,42 +426,70 @@ export default function StaticView() {
           )}
         </div>
 
-        {activeTab === "array" && <ArrayView values={array} />}
-        {activeTab === "linkedlist" && <LinkedListView values={array} />}
-        {activeTab === "bst" && <BSTView values={array} tree={tree} />}
+        {/* Visualizer */}
+        <div className="mt-6 p-6 rounded-xl bg-gradient-to-br from-stone-900/50 to-stone-800/50 border border-stone-700/50">
+          {activeTab === "array" && <ArrayView values={array} />}
+          {activeTab === "linkedlist" && <LinkedListView values={array} />}
+          {activeTab === "bst" && <BSTView values={array} tree={tree} />}
+        </div>
 
+        {/* Search Result */}
         {searchResult !== null && !error && (
-          <div className="mt-4 p-2 rounded bg-stone-700">
-            <span className="font-semibold">Search Result: </span>
-            <span className={searchResult ? "text-green-400" : "text-red-400"}>
-              {searchResult ? "Found" : "Not Found"}
-            </span>
+          <div className={`mt-4 p-4 rounded-xl border-2 ${
+            searchResult 
+              ? 'bg-emerald-900/30 border-emerald-600/50' 
+              : 'bg-red-900/30 border-red-600/50'
+          } animate-fade-in`}>
+            <div className="flex items-center gap-3">
+              {searchResult ? (
+                <svg className="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              )}
+              <div>
+                <span className="font-semibold">Search Result: </span>
+                <span className={searchResult ? "text-emerald-300 font-bold" : "text-red-300 font-bold"}>
+                  {searchResult ? "Found ✓" : "Not Found"}
+                </span>
+              </div>
+            </div>
           </div>
         )}
 
+        {/* Event Log */}
         {events.length > 0 && (
           <div className="mt-6">
-            <h2 className="text-lg font-semibold mb-2 text-indigo-300">
+            <h2 className="text-lg font-bold mb-3 flex items-center gap-2 text-stone-200">
+              <svg className="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+              </svg>
               Event Log
+              <span className="badge badge-primary ml-auto">{events.length}</span>
             </h2>
-            <div className="max-h-64 overflow-auto border border-stone-700 rounded bg-stone-900/40 text-sm divide-y divide-stone-800">
+            <div className="max-h-80 overflow-auto border border-stone-700/50 rounded-xl bg-stone-900/40 text-sm divide-y divide-stone-800/50 backdrop-blur-sm custom-scrollbar">
               {events.map((e, i) => (
                 <div
                   key={i}
-                  className="px-3 py-2 flex flex-col sm:flex-row sm:items-center gap-1"
+                  className="px-4 py-3 hover:bg-stone-800/30 transition-colors duration-200"
                 >
-                  <span className="text-indigo-400 font-mono text-xs sm:text-[11px] tracking-wide">
-                    {e.op}
-                  </span>
-                  <span className="flex-1 text-stone-300">{e.detail}</span>
-                  {e.time && (
-                    <span className="text-green-400 font-mono text-xs">
-                      {e.time}
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                    <span className="badge badge-primary font-mono text-[11px]">
+                      {e.op}
                     </span>
-                  )}
-                  <span className="text-stone-500 font-mono text-[10px] hidden md:inline">
-                    [{e.array?.join(", ")}]
-                  </span>
+                    <span className="flex-1 text-stone-300">{e.detail}</span>
+                    {e.time && (
+                      <span className="badge badge-success">
+                        ⚡ {e.time}
+                      </span>
+                    )}
+                    <span className="text-stone-500 font-mono text-[10px] hidden lg:inline">
+                      [{e.array?.slice(0, 10).join(", ")}{e.array?.length > 10 ? "..." : ""}]
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -411,3 +499,4 @@ export default function StaticView() {
     </div>
   );
 }
+

@@ -1,385 +1,667 @@
-// New dynamic data-structure manager with adaptive switching (last-5 ops + size thresholds)
+// ---------- dynamic.js ----------
+// DynamicDS class with 3-phase adaptive switching system
+const { performance } = require("perf_hooks");
 
-// ---------------- Linked List ----------------
-class ListNode {
-  constructor(value) {
-    this.value = value;
-    this.next = null;
-  }
-}
-
-class LinkedList {
+class DynamicDS {
   constructor() {
-    this.head = null;
-    this.length = 0;
+    // Core data structure storage
+    this.type = "array"; // current type: 'array', 'linkedlist', or 'bst'
+    this.array = [];
+    this.ll_head = null;
+    this.bst_root = null;
+
+    // Operation tracking for frequency-based switching
+    this.freq = { search: 0, index: 0, insert: 0 };
+    
+    // Phase system
+    this.phase = 1; // current phase (1, 2, or 3)
+    this.threshold = 3; // current threshold based on phase
+    
+    // Timestamp tracking for idle detection
+    this.lastOpTime = Date.now();
+    this.IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+    
+    // Operation history
+    this.history = [];
   }
+
+  // ========================================
+  // Phase Management
+  // ========================================
+  
+  /**
+   * Update phase and threshold based on current size
+   */
+  _updatePhase() {
+    const size = this._size();
+    
+    if (size < 100) {
+      this.phase = 1;
+      this.threshold = 3;
+    } else if (size >= 100 && size <= 500) {
+      this.phase = 2;
+      this.threshold = 6;
+    } else {
+      this.phase = 3;
+      this.threshold = 9;
+    }
+  }
+
+  /**
+   * Get the size of current data structure
+   */
+  _size() {
+    switch (this.type) {
+      case "array":
+        return this.array.length;
+      case "linkedlist":
+        let count = 0;
+        let cur = this.ll_head;
+        while (cur) {
+          count++;
+          cur = cur.next;
+        }
+        return count;
+      case "bst":
+        const countNodes = (node) => {
+          if (!node) return 0;
+          return 1 + countNodes(node.left) + countNodes(node.right);
+        };
+        return countNodes(this.bst_root);
+      default:
+        return 0;
+    }
+  }
+
+  /**
+   * Check if system has been idle for 5 minutes
+   * If so, reset to phase default structure
+   */
+  _checkIdleTimeout() {
+    const now = Date.now();
+    const timeSinceLastOp = now - this.lastOpTime;
+    
+    if (timeSinceLastOp > this.IDLE_TIMEOUT) {
+      console.log(`[IDLE TIMEOUT] ${timeSinceLastOp}ms since last operation. Resetting to phase default...`);
+      this._resetToPhaseDefault();
+      this._resetFrequencies();
+    }
+  }
+
+  /**
+   * Reset to the default structure for current phase
+   */
+  _resetToPhaseDefault() {
+    let targetType;
+    
+    switch (this.phase) {
+      case 1:
+        targetType = "array";
+        break;
+      case 2:
+        targetType = "linkedlist";
+        break;
+      case 3:
+        targetType = "bst";
+        break;
+      default:
+        targetType = "array";
+    }
+    
+    if (this.type !== targetType) {
+      console.log(`[PHASE DEFAULT] Converting to ${targetType} for phase ${this.phase}`);
+      this._convertTo(targetType);
+    }
+  }
+
+  /**
+   * Update last operation timestamp
+   */
+  _updateTimestamp() {
+    this.lastOpTime = Date.now();
+  }
+
+  /**
+   * Reset all operation frequencies to 0
+   */
+  _resetFrequencies() {
+    this.freq = { search: 0, index: 0, insert: 0 };
+    console.log("[FREQ RESET] All operation frequencies reset to 0");
+  }
+
+  /**
+   * Increment operation frequency and check if threshold reached
+   * @param {string} opType - 'search', 'index', or 'insert'
+   */
+  _trackOperation(opType) {
+    this._updateTimestamp();
+    this._updatePhase();
+    this._checkIdleTimeout();
+    
+    // Increment the frequency counter
+    if (opType in this.freq) {
+      this.freq[opType]++;
+      console.log(`[FREQ] ${opType}: ${this.freq[opType]}/${this.threshold} (Phase ${this.phase})`);
+      
+      // Check if threshold reached for this operation
+      if (this.freq[opType] >= this.threshold) {
+        console.log(`[THRESHOLD REACHED] ${opType} reached ${this.threshold}. Switching structure...`);
+        this._handleThresholdSwitch(opType);
+      }
+    }
+  }
+
+  /**
+   * Handle automatic switching when threshold is reached
+   * @param {string} opType - operation that triggered the switch
+   */
+  _handleThresholdSwitch(opType) {
+    let targetType = this.type; // default to current
+    
+    switch (opType) {
+      case "search":
+        targetType = "bst";
+        break;
+      case "index":
+        targetType = "array";
+        break;
+      case "insert":
+        targetType = "linkedlist";
+        break;
+    }
+    
+    // Only convert if different from current type
+    if (targetType !== this.type) {
+      console.log(`[AUTO SWITCH] ${opType} threshold hit → switching to ${targetType}`);
+      this._convertTo(targetType);
+      this._resetFrequencies();
+    } else {
+      console.log(`[AUTO SWITCH] Already using optimal structure (${targetType})`);
+      this._resetFrequencies();
+    }
+  }
+
+  // ========================================
+  // Data Structure Helpers
+  // ========================================
+
+  _LLNode(value) {
+    return { value, next: null };
+  }
+
+  _BSTNode(value) {
+    return { value, left: null, right: null, height: 1 };
+  }
+
+  // ========================================
+  // Core Operations
+  // ========================================
+
+  /**
+   * Insert at index (or append if no index)
+   */
   insertAt(index, value) {
-    const node = new ListNode(value);
-    if (index <= 0 || !this.head) {
-      node.next = this.head;
-      this.head = node;
-      this.length++;
-      return;
+    this._trackOperation("insert");
+    
+    if (index === undefined || index === null) {
+      // Append operation
+      return this._append(value);
     }
-    let curr = this.head,
-      prev = null,
-      i = 0;
-    while (curr && i < index) {
-      prev = curr;
-      curr = curr.next;
-      i++;
-    }
-    if (prev) {
-      node.next = curr;
-      prev.next = node;
-      this.length++;
+    
+    // Index-based insertion
+    switch (this.type) {
+      case "array":
+        if (index < 0 || index > this.array.length) {
+          this.array.push(value);
+        } else {
+          this.array.splice(index, 0, value);
+        }
+        break;
+      case "linkedlist":
+        this._llInsertAt(index, value);
+        break;
+      case "bst":
+        // BST doesn't support index-based insertion; append instead
+        this._bstInsert(value);
+        break;
     }
   }
+
+  /**
+   * Append value to end of structure
+   */
+  _append(value) {
+    switch (this.type) {
+      case "array":
+        this.array.push(value);
+        break;
+      case "linkedlist":
+        const node = this._LLNode(value);
+        if (!this.ll_head) {
+          this.ll_head = node;
+        } else {
+          let cur = this.ll_head;
+          while (cur.next) cur = cur.next;
+          cur.next = node;
+        }
+        break;
+      case "bst":
+        this._bstInsert(value);
+        break;
+    }
+  }
+
+  /**
+   * Remove at index
+   */
   removeAt(index) {
-    if (!this.head || index < 0) return;
+    this._trackOperation("insert"); // delete is similar to insert
+    
+    switch (this.type) {
+      case "array":
+        if (index >= 0 && index < this.array.length) {
+          this.array.splice(index, 1);
+        }
+        break;
+      case "linkedlist":
+        this._llRemoveAt(index);
+        break;
+      case "bst":
+        // BST: remove by value at that index in inorder
+        const vals = this._bstInorder();
+        if (index >= 0 && index < vals.length) {
+          this._bstDelete(vals[index]);
+        }
+        break;
+    }
+  }
+
+  /**
+   * Search for a value
+   */
+  search(value) {
+    this._trackOperation("search");
+    
+    switch (this.type) {
+      case "array":
+        return this.array.includes(value);
+      case "linkedlist":
+        let cur = this.ll_head;
+        while (cur) {
+          if (cur.value === value) return true;
+          cur = cur.next;
+        }
+        return false;
+      case "bst":
+        return this._bstSearch(value);
+      default:
+        return false;
+    }
+  }
+
+  /**
+   * Access element by index (tracks index frequency)
+   */
+  accessByIndex(index) {
+    this._trackOperation("index");
+    
+    const data = this.getAll();
+    if (index < 0 || index >= data.length) {
+      return null;
+    }
+    return data[index];
+  }
+
+  /**
+   * Get all data as array
+   */
+  getAll() {
+    switch (this.type) {
+      case "array":
+        return [...this.array];
+      case "linkedlist":
+        const result = [];
+        let cur = this.ll_head;
+        while (cur) {
+          result.push(cur.value);
+          cur = cur.next;
+        }
+        return result;
+      case "bst":
+        return this._bstInorder();
+      default:
+        return [];
+    }
+  }
+
+  /**
+   * Get current type
+   */
+  getType() {
+    return this.type;
+  }
+
+  /**
+   * Get BST tree structure (for visualization)
+   */
+  getTree() {
+    if (this.type === "bst") {
+      return this._cloneBST(this.bst_root);
+    }
+    return null;
+  }
+
+  /**
+   * Sort data
+   */
+  sort(order = "asc") {
+    this._trackOperation("search"); // BST gives sorted data via inorder traversal
+    
+    const data = this.getAll();
+    data.sort((a, b) => {
+      if (order === "desc") return b - a;
+      return a - b;
+    });
+    
+    // Rebuild structure with sorted data
+    this._rebuildWith(data);
+    return this.getAll();
+  }
+
+  /**
+   * Bulk add random numbers
+   */
+  bulkAdd(count = 10, min = 0, max = 1000) {
+    this._trackOperation("insert"); // Bulk add is inserting multiple elements
+    
+    for (let i = 0; i < count; i++) {
+      const value = Math.floor(Math.random() * (max - min + 1)) + min;
+      this._append(value);
+    }
+    return this.getAll();
+  }
+
+  /**
+   * Clear all data
+   */
+  clear() {
+    this._updateTimestamp();
+    this.array = [];
+    this.ll_head = null;
+    this.bst_root = null;
+    this.type = "array";
+    this._resetFrequencies();
+    this._updatePhase();
+    return [];
+  }
+
+  /**
+   * Get current state info
+   */
+  getState() {
+    return {
+      type: this.type,
+      size: this._size(),
+      phase: this.phase,
+      threshold: this.threshold,
+      freq: { ...this.freq },
+      lastOpTime: this.lastOpTime,
+      idleTime: Date.now() - this.lastOpTime,
+      history: [...this.history].slice(0, 10)
+    };
+  }
+
+  // ========================================
+  // Linked List Helpers
+  // ========================================
+
+  _llInsertAt(index, value) {
+    const node = this._LLNode(value);
     if (index === 0) {
-      this.head = this.head.next;
-      this.length = Math.max(0, this.length - 1);
+      node.next = this.ll_head;
+      this.ll_head = node;
       return;
     }
-    let curr = this.head,
-      prev = null,
-      i = 0;
-    while (curr && i < index) {
-      prev = curr;
-      curr = curr.next;
+    
+    let cur = this.ll_head;
+    let i = 0;
+    while (cur && i < index - 1) {
+      cur = cur.next;
       i++;
     }
-    if (curr && prev) {
-      prev.next = curr.next;
-      this.length = Math.max(0, this.length - 1);
+    
+    if (cur) {
+      node.next = cur.next;
+      cur.next = node;
     }
   }
-  toArray() {
-    const arr = [];
-    let curr = this.head;
-    while (curr) {
-      arr.push(curr.value);
-      curr = curr.next;
+
+  _llRemoveAt(index) {
+    if (!this.ll_head) return;
+    
+    if (index === 0) {
+      this.ll_head = this.ll_head.next;
+      return;
     }
-    return arr;
+    
+    let cur = this.ll_head;
+    let i = 0;
+    while (cur && i < index - 1) {
+      cur = cur.next;
+      i++;
+    }
+    
+    if (cur && cur.next) {
+      cur.next = cur.next.next;
+    }
   }
-}
 
-// ---------------- Balanced BST (AVL) ----------------
-class AVLNode {
-  constructor(value) {
-    this.value = value;
-    this.left = null;
-    this.right = null;
-    this.height = 1;
-  }
-}
+  // ========================================
+  // BST Helpers (AVL Implementation)
+  // ========================================
 
-class AVLTree {
-  constructor() {
-    this.root = null;
-    this._size = 0;
+  _height(node) {
+    return node ? node.height : 0;
   }
-  height(n) {
-    return n ? n.height : 0;
+
+  _getBalance(node) {
+    return node ? this._height(node.left) - this._height(node.right) : 0;
   }
-  get size() {
-    return this._size;
-  }
-  rightRotate(y) {
+
+  _rightRotate(y) {
     const x = y.left;
     const T2 = x.right;
     x.right = y;
     y.left = T2;
-    y.height = Math.max(this.height(y.left), this.height(y.right)) + 1;
-    x.height = Math.max(this.height(x.left), this.height(x.right)) + 1;
+    y.height = Math.max(this._height(y.left), this._height(y.right)) + 1;
+    x.height = Math.max(this._height(x.left), this._height(x.right)) + 1;
     return x;
   }
-  leftRotate(x) {
+
+  _leftRotate(x) {
     const y = x.right;
     const T2 = y.left;
     y.left = x;
     x.right = T2;
-    x.height = Math.max(this.height(x.left), this.height(x.right)) + 1;
-    y.height = Math.max(this.height(y.left), this.height(y.right)) + 1;
+    x.height = Math.max(this._height(x.left), this._height(x.right)) + 1;
+    y.height = Math.max(this._height(y.left), this._height(y.right)) + 1;
     return y;
   }
-  getBalance(n) {
-    return n ? this.height(n.left) - this.height(n.right) : 0;
+
+  _bstInsert(value) {
+    const insertNode = (node, value) => {
+      if (!node) return this._BSTNode(value);
+      
+      if (value <= node.value) {
+        node.left = insertNode(node.left, value);
+      } else {
+        node.right = insertNode(node.right, value);
+      }
+      
+      node.height = 1 + Math.max(this._height(node.left), this._height(node.right));
+      const balance = this._getBalance(node);
+      
+      // Left Left
+      if (balance > 1 && value <= node.left.value) {
+        return this._rightRotate(node);
+      }
+      
+      // Left Right
+      if (balance > 1 && value > node.left.value) {
+        node.left = this._leftRotate(node.left);
+        return this._rightRotate(node);
+      }
+      
+      // Right Right
+      if (balance < -1 && value > node.right.value) {
+        return this._leftRotate(node);
+      }
+      
+      // Right Left
+      if (balance < -1 && value <= node.right.value) {
+        node.right = this._rightRotate(node.right);
+        return this._leftRotate(node);
+      }
+      
+      return node;
+    };
+    
+    this.bst_root = insertNode(this.bst_root, value);
   }
-  insert(value) {
-    this.root = this._insert(this.root, value);
-    this._size++;
-  }
-  _insert(node, value) {
-    if (!node) return new AVLNode(value);
-    if (value <= node.value) node.left = this._insert(node.left, value);
-    else node.right = this._insert(node.right, value);
-    node.height = 1 + Math.max(this.height(node.left), this.height(node.right));
-    const bal = this.getBalance(node);
-    if (bal > 1 && value <= node.left.value) return this.rightRotate(node);
-    if (bal > 1 && value > node.left.value) {
-      node.left = this.leftRotate(node.left);
-      return this.rightRotate(node);
-    }
-    if (bal < -1 && value > node.right.value) return this.leftRotate(node);
-    if (bal < -1 && value <= node.right.value) {
-      node.right = this.rightRotate(node.right);
-      return this.leftRotate(node);
-    }
-    return node;
-  }
-  search(value) {
-    let cur = this.root;
+
+  _bstSearch(value) {
+    let cur = this.bst_root;
     while (cur) {
       if (value === cur.value) return true;
       cur = value < cur.value ? cur.left : cur.right;
     }
     return false;
   }
-  minValueNode(node) {
-    let cur = node;
-    while (cur.left) cur = cur.left;
-    return cur;
-  }
-  delete(value) {
-    const before = this._size;
-    this.root = this._delete(this.root, value);
-    if (this._size < before) return true;
-    return false;
-  }
-  _delete(root, value) {
-    if (!root) return root;
-    if (value < root.value) root.left = this._delete(root.left, value);
-    else if (value > root.value) root.right = this._delete(root.right, value);
-    else {
-      // found
-      this._size--;
-      if (!root.left || !root.right) {
-        const temp = root.left ? root.left : root.right;
-        root = temp || null;
+
+  _bstDelete(value) {
+    const minValueNode = (node) => {
+      let current = node;
+      while (current.left) current = current.left;
+      return current;
+    };
+    
+    const deleteNode = (node, value) => {
+      if (!node) return null;
+      
+      if (value < node.value) {
+        node.left = deleteNode(node.left, value);
+      } else if (value > node.value) {
+        node.right = deleteNode(node.right, value);
       } else {
-        const temp = this.minValueNode(root.right);
-        root.value = temp.value;
-        root.right = this._delete(root.right, temp.value);
-      }
-    }
-    if (!root) return root;
-    root.height = 1 + Math.max(this.height(root.left), this.height(root.right));
-    const bal = this.getBalance(root);
-    if (bal > 1 && this.getBalance(root.left) >= 0) return this.rightRotate(root);
-    if (bal > 1 && this.getBalance(root.left) < 0) {
-      root.left = this.leftRotate(root.left);
-      return this.rightRotate(root);
-    }
-    if (bal < -1 && this.getBalance(root.right) <= 0) return this.leftRotate(root);
-    if (bal < -1 && this.getBalance(root.right) > 0) {
-      root.right = this.rightRotate(root.right);
-      return this.leftRotate(root);
-    }
-    return root;
-  }
-  inorder(node, out) {
-    if (!node) return;
-    this.inorder(node.left, out);
-    out.push(node.value);
-    this.inorder(node.right, out);
-  }
-  toArray() {
-    const arr = [];
-    this.inorder(this.root, arr);
-    return arr;
-  }
-}
-
-// ---------------- Array wrapper ----------------
-class ArrayDS {
-  constructor(values = []) {
-    this.arr = Array.isArray(values) ? values.slice() : [];
-  }
-  push(v) {
-    this.arr.push(v);
-  }
-  insertAt(index, value) {
-    const i = Math.max(0, Math.min(index, this.arr.length));
-    this.arr.splice(i, 0, value);
-  }
-  removeAt(index) {
-    if (index < 0 || index >= this.arr.length) return;
-    this.arr.splice(index, 1);
-  }
-  toArray() {
-    return this.arr.slice();
-  }
-  get length() {
-    return this.arr.length;
-  }
-}
-
-// ---------------- Dynamic Manager ----------------
-class DynamicDS {
-  constructor() {
-    this.type = "array"; // array | linkedlist | bst
-    this.ds = new ArrayDS();
-    this.opHistory = []; // last 5 ops: 'index' | 'search' | 'insert_delete'
-  }
-
-  // --- helpers ---
-  _size() {
-    if (this.type === "array") return this.ds.length;
-    if (this.type === "linkedlist") return this.ds.length ?? this.ds.toArray().length;
-    if (this.type === "bst") return this.ds.size ?? this.ds.toArray().length;
-    return 0;
-  }
-  _toArray() {
-    if (this.type === "array") return this.ds.toArray();
-    return this.ds.toArray();
-  }
-  _record(op) {
-    this.opHistory.push(op);
-    if (this.opHistory.length > 5) this.opHistory.shift();
-  }
-  _choosePreferredType() {
-    const size = this._size();
-    const counts = { index: 0, search: 0, insert_delete: 0 };
-    for (const o of this.opHistory) counts[o] = (counts[o] || 0) + 1;
-    // Frequency-based override first
-    if (counts.search >= 3) return "bst";
-    if (counts.index >= 3) return "array";
-    if (counts.insert_delete >= 3) return "linkedlist";
-    // Size-based default
-    if (size < 100) return "array";
-    if (size < 1000) return "linkedlist";
-    return "bst";
-  }
-  _convertTo(type) {
-    if (this.type === type) return;
-    const data = this._toArray();
-    if (type === "array") {
-      this.ds = new ArrayDS(data);
-    } else if (type === "linkedlist") {
-      const ll = new LinkedList();
-      for (let i = 0; i < data.length; i++) ll.insertAt(i, data[i]);
-      this.ds = ll;
-    } else if (type === "bst") {
-      const bst = new AVLTree();
-      for (const v of data) bst.insert(v);
-      this.ds = bst;
-    }
-    this.type = type;
-  }
-  _reconsider() {
-    const target = this._choosePreferredType();
-    this._convertTo(target);
-  }
-
-  // --- public API ---
-  insertAt(index, value) {
-    const hasIndex = Number.isInteger(index);
-    if (hasIndex) {
-      // index-based insertion prefers array
-      if (this.type !== "array") this._convertTo("array");
-      this.ds.insertAt(index, value);
-      this._record("index");
-    } else {
-      // end push — generic insert/delete bucket
-      if (this.type === "array") this.ds.push(value);
-      else if (this.type === "linkedlist") this.ds.insertAt(this.ds.length, value);
-      else if (this.type === "bst") this.ds.insert(value);
-      else {
-        this._convertTo("array");
-        this.ds.push(value);
-      }
-      this._record("insert_delete");
-    }
-    this._reconsider();
-    return this.getAll();
-  }
-
-  removeAt(index) {
-    if (!Number.isInteger(index)) return this.getAll();
-    // index-based deletion prefers linked list or array; use array for simplicity
-    if (this.type !== "array") this._convertTo("array");
-    this.ds.removeAt(index);
-    this._record("index");
-    this._reconsider();
-    return this.getAll();
-  }
-
-  search(value) {
-    // don't switch immediately; record and then reconsider
-    let found = false;
-    if (this.type === "bst") found = this.ds.search(value);
-    else {
-      // linear scan
-      const arr = this._toArray();
-      for (let i = 0; i < arr.length; i++) {
-        if (arr[i] === value) {
-          found = true;
-          break;
+        if (!node.left || !node.right) {
+          const temp = node.left ? node.left : node.right;
+          if (!temp) {
+            node = null;
+          } else {
+            node = temp;
+          }
+        } else {
+          const temp = minValueNode(node.right);
+          node.value = temp.value;
+          node.right = deleteNode(node.right, temp.value);
         }
       }
-    }
-    this._record("search");
-    this._reconsider();
-    return found;
-  }
-
-  sort(order = "asc") {
-    // Sorting produces a BST (ascending via inorder), desc via reverse
-    const data = this._toArray();
-    data.sort((a, b) => (a < b ? -1 : a > b ? 1 : 0));
-    const sorted = order === "desc" ? data.slice().reverse() : data;
-    // rebuild as BST to make searching efficient after a sort
-    this.ds = new AVLTree();
-    for (const v of sorted) this.ds.insert(v);
-    this.type = "bst";
-    // Count as search-friendly change to bias towards bst
-    this._record("search");
-    this._reconsider();
-    return sorted;
-  }
-
-  bulkAdd(count = 10, min = 0, max = 1000) {
-    const c = Math.max(0, Math.min(Number(count) || 0, 100000));
-    if (c === 0) return this.getAll();
-    // operate in array for speed
-    const arr = this._toArray();
-    for (let i = 0; i < c; i++) {
-      const v = Math.floor(Math.random() * (max - min + 1)) + min;
-      arr.push(v);
-    }
-    this.type = "array";
-    this.ds = new ArrayDS(arr);
-    // push multiple inserts into history (cap to 5)
-    const pushes = Math.min(5, Math.ceil(c / 2));
-    for (let i = 0; i < pushes; i++) this._record("insert_delete");
-    this._reconsider();
-    return this.getAll();
-  }
-
-  clear() {
-    this.type = "array";
-    this.ds = new ArrayDS();
-    this.opHistory = [];
-    return this.getAll();
-  }
-
-  getAll() {
-    return this._toArray();
-  }
-  getType() {
-    return this.type;
-  }
-
-  getState() {
-    return {
-      type: this.type,
-      size: this._size(),
-      history: this.opHistory.slice(-5),
-      nextType: this._choosePreferredType(),
+      
+      if (!node) return node;
+      
+      node.height = Math.max(this._height(node.left), this._height(node.right)) + 1;
+      const balance = this._getBalance(node);
+      
+      if (balance > 1 && this._getBalance(node.left) >= 0) {
+        return this._rightRotate(node);
+      }
+      
+      if (balance > 1 && this._getBalance(node.left) < 0) {
+        node.left = this._leftRotate(node.left);
+        return this._rightRotate(node);
+      }
+      
+      if (balance < -1 && this._getBalance(node.right) <= 0) {
+        return this._leftRotate(node);
+      }
+      
+      if (balance < -1 && this._getBalance(node.right) > 0) {
+        node.right = this._rightRotate(node.right);
+        return this._leftRotate(node);
+      }
+      
+      return node;
     };
+    
+    this.bst_root = deleteNode(this.bst_root, value);
+  }
+
+  _bstInorder() {
+    const result = [];
+    const inorder = (node) => {
+      if (!node) return;
+      inorder(node.left);
+      result.push(node.value);
+      inorder(node.right);
+    };
+    inorder(this.bst_root);
+    return result;
+  }
+
+  _cloneBST(node) {
+    if (!node) return null;
+    return {
+      value: node.value,
+      left: this._cloneBST(node.left),
+      right: this._cloneBST(node.right)
+    };
+  }
+
+  // ========================================
+  // Structure Conversion
+  // ========================================
+
+  /**
+   * Convert to specified type
+   */
+  _convertTo(targetType) {
+    if (this.type === targetType) return;
+    
+    console.log(`[CONVERT] ${this.type} → ${targetType}`);
+    const data = this.getAll();
+    this.type = targetType;
+    this._rebuildWith(data);
+    this.history.unshift({ type: targetType, time: Date.now() });
+    if (this.history.length > 20) this.history = this.history.slice(0, 20);
+  }
+
+  /**
+   * Rebuild current structure with given data
+   */
+  _rebuildWith(data) {
+    // Clear all structures
+    this.array = [];
+    this.ll_head = null;
+    this.bst_root = null;
+    
+    // Rebuild in current type
+    switch (this.type) {
+      case "array":
+        this.array = [...data];
+        break;
+      case "linkedlist":
+        for (let i = data.length - 1; i >= 0; i--) {
+          const node = this._LLNode(data[i]);
+          node.next = this.ll_head;
+          this.ll_head = node;
+        }
+        break;
+      case "bst":
+        for (const val of data) {
+          this._bstInsert(val);
+        }
+        break;
+    }
   }
 }
 

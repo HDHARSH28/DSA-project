@@ -17,6 +17,16 @@ export async function ll_search(value) {
   return res.data;
 }
 
+export async function ll_sort_inc() {
+  const res = await axios.post(`${BASE_URL}/ll/sort_inc`);
+  return res.data;
+}
+
+export async function ll_sort_dec() {
+  const res = await axios.post(`${BASE_URL}/ll/sort_dec`);
+  return res.data;
+}
+
 export async function arr_push(value) {
   const res = await axios.post(`${BASE_URL}/arr/push`, { value });
   return res.data;
@@ -111,6 +121,13 @@ export async function dy_search(value) {
     `${BASE_URL}/dy/search/${encodeURIComponent(value)}`
   );
   return res.data; // { found, type }
+}
+
+export async function dy_access(index) {
+  const res = await axios.get(
+    `${BASE_URL}/dy/access/${encodeURIComponent(index)}`
+  );
+  return res.data; // { value, index, type }
 }
 
 export async function dy_sort(order = "asc") {
