@@ -12,15 +12,15 @@ class DynamicDS {
 
     // Operation tracking for frequency-based switching
     this.freq = { search: 0, index: 0, insert: 0 };
-    
+
     // Phase system
     this.phase = 1; // current phase (1, 2, or 3)
     this.threshold = 3; // current threshold based on phase
-    
+
     // Timestamp tracking for idle detection
     this.lastOpTime = Date.now();
     this.IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
-    
+
     // Operation history
     this.history = [];
   }
@@ -28,13 +28,13 @@ class DynamicDS {
   // ========================================
   // Phase Management
   // ========================================
-  
+
   /**
    * Update phase and threshold based on current size
    */
   _updatePhase() {
     const size = this._size();
-    
+
     if (size < 100) {
       this.phase = 1;
       this.threshold = 3;
@@ -80,10 +80,40 @@ class DynamicDS {
   _checkIdleTimeout() {
     const now = Date.now();
     const timeSinceLastOp = now - this.lastOpTime;
-    
+
     if (timeSinceLastOp > this.IDLE_TIMEOUT) {
-      console.log(`[IDLE TIMEOUT] ${timeSinceLastOp}ms since last operation. Resetting to phase default...`);
-      this._resetToPhaseDefault();
+      console.log(
+        `[IDLE TIMEOUT] ${timeSinceLastOp}ms since last operation. Resetting to phase default...`
+      );
+      // Convert entire structure to phase-default base on idle
+      const data = this.getAll(); // capture current data before changing type
+      let baseType;
+      switch (this.phase) {
+        case 1:
+          baseType = "array";
+          break;
+        case 2:
+          baseType = "linkedlist";
+          break;
+        case 3:
+          baseType = "bst";
+          break;
+        default:
+          baseType = "array";
+      }
+      if (this.type !== baseType) {
+        console.log(
+          `[IDLE CONVERT] Converting ${this.type} → ${baseType} due to idle timeout (phase ${this.phase})`
+        );
+        this.type = baseType;
+        this._rebuildWith(data);
+        this.history.unshift({ type: baseType, time: Date.now() });
+        if (this.history.length > 20) this.history = this.history.slice(0, 20);
+      } else {
+        console.log(
+          `[IDLE CONVERT] Already at base default (${baseType}) for phase ${this.phase}`
+        );
+      }
       this._resetFrequencies();
     }
   }
@@ -93,7 +123,7 @@ class DynamicDS {
    */
   _resetToPhaseDefault() {
     let targetType;
-    
+
     switch (this.phase) {
       case 1:
         targetType = "array";
@@ -107,9 +137,11 @@ class DynamicDS {
       default:
         targetType = "array";
     }
-    
+
     if (this.type !== targetType) {
-      console.log(`[PHASE DEFAULT] Converting to ${targetType} for phase ${this.phase}`);
+      console.log(
+        `[PHASE DEFAULT] Converting to ${targetType} for phase ${this.phase}`
+      );
       this._convertTo(targetType);
     }
   }
@@ -134,18 +166,22 @@ class DynamicDS {
    * @param {string} opType - 'search', 'index', or 'insert'
    */
   _trackOperation(opType) {
-    this._updateTimestamp();
     this._updatePhase();
     this._checkIdleTimeout();
-    
+    this._updateTimestamp();
+
     // Increment the frequency counter
     if (opType in this.freq) {
       this.freq[opType]++;
-      console.log(`[FREQ] ${opType}: ${this.freq[opType]}/${this.threshold} (Phase ${this.phase})`);
-      
+      console.log(
+        `[FREQ] ${opType}: ${this.freq[opType]}/${this.threshold} (Phase ${this.phase})`
+      );
+
       // Check if threshold reached for this operation
       if (this.freq[opType] >= this.threshold) {
-        console.log(`[THRESHOLD REACHED] ${opType} reached ${this.threshold}. Switching structure...`);
+        console.log(
+          `[THRESHOLD REACHED] ${opType} reached ${this.threshold}. Switching structure...`
+        );
         this._handleThresholdSwitch(opType);
       }
     }
@@ -157,7 +193,7 @@ class DynamicDS {
    */
   _handleThresholdSwitch(opType) {
     let targetType = this.type; // default to current
-    
+
     switch (opType) {
       case "search":
         targetType = "bst";
@@ -169,14 +205,18 @@ class DynamicDS {
         targetType = "linkedlist";
         break;
     }
-    
+
     // Only convert if different from current type
     if (targetType !== this.type) {
-      console.log(`[AUTO SWITCH] ${opType} threshold hit → switching to ${targetType}`);
+      console.log(
+        `[AUTO SWITCH] ${opType} threshold hit → switching to ${targetType}`
+      );
       this._convertTo(targetType);
       this._resetFrequencies();
     } else {
-      console.log(`[AUTO SWITCH] Already using optimal structure (${targetType})`);
+      console.log(
+        `[AUTO SWITCH] Already using optimal structure (${targetType})`
+      );
       this._resetFrequencies();
     }
   }
@@ -202,12 +242,12 @@ class DynamicDS {
    */
   insertAt(index, value) {
     this._trackOperation("insert");
-    
+
     if (index === undefined || index === null) {
       // Append operation
       return this._append(value);
     }
-    
+
     // Index-based insertion
     switch (this.type) {
       case "array":
@@ -256,7 +296,7 @@ class DynamicDS {
    */
   removeAt(index) {
     this._trackOperation("insert"); // delete is similar to insert
-    
+
     switch (this.type) {
       case "array":
         if (index >= 0 && index < this.array.length) {
@@ -281,7 +321,7 @@ class DynamicDS {
    */
   search(value) {
     this._trackOperation("search");
-    
+
     switch (this.type) {
       case "array":
         return this.array.includes(value);
@@ -304,12 +344,30 @@ class DynamicDS {
    */
   accessByIndex(index) {
     this._trackOperation("index");
-    
-    const data = this.getAll();
-    if (index < 0 || index >= data.length) {
-      return null;
+
+    switch (this.type) {
+      case "array":
+        if (index < 0 || index >= this.array.length) return null;
+        return this.array[index];
+
+      case "linkedlist":
+        if (index < 0) return null;
+        let cur = this.ll_head;
+        let i = 0;
+        while (cur && i < index) {
+          cur = cur.next;
+          i++;
+        }
+        return cur ? cur.value : null;
+
+      case "bst":
+        const vals = this._bstInorder();
+        if (index < 0 || index >= vals.length) return null;
+        return vals[index];
+
+      default:
+        return null;
     }
-    return data[index];
   }
 
   /**
@@ -355,16 +413,46 @@ class DynamicDS {
    * Sort data
    */
   sort(order = "asc") {
-    this._trackOperation("search"); // BST gives sorted data via inorder traversal
-    
-    const data = this.getAll();
-    data.sort((a, b) => {
-      if (order === "desc") return b - a;
-      return a - b;
-    });
-    
-    // Rebuild structure with sorted data
-    this._rebuildWith(data);
+    // track as search because sorting primarily arranges for fast lookups (keeps behavior)
+    this._trackOperation("search");
+
+    const compare = (a, b) => (order === "desc" ? b - a : a - b);
+    let sortedData;
+
+    switch (this.type) {
+      case "array":
+        // sort in place safely by cloning then rebuilding to keep history/consistency
+        sortedData = [...this.array].sort(compare);
+        this._rebuildWith(sortedData);
+        break;
+
+      case "linkedlist":
+        // gather -> sort -> rebuild as linked list
+        const llArr = [];
+        let cur = this.ll_head;
+        while (cur) {
+          llArr.push(cur.value);
+          cur = cur.next;
+        }
+        sortedData = llArr.sort(compare);
+        this._rebuildWith(sortedData);
+        break;
+
+      case "bst":
+        // inorder gives ascending order; reverse if needed, then rebuild BST
+        const vals = this._bstInorder();
+        if (order === "desc") vals.reverse();
+        sortedData = vals;
+        this._rebuildWith(sortedData);
+        break;
+
+      default:
+        // fallback: getAll, sort and rebuild
+        sortedData = this.getAll().sort(compare);
+        this._rebuildWith(sortedData);
+        break;
+    }
+
     return this.getAll();
   }
 
@@ -373,7 +461,7 @@ class DynamicDS {
    */
   bulkAdd(count = 10, min = 0, max = 1000) {
     this._trackOperation("insert"); // Bulk add is inserting multiple elements
-    
+
     for (let i = 0; i < count; i++) {
       const value = Math.floor(Math.random() * (max - min + 1)) + min;
       this._append(value);
@@ -407,7 +495,7 @@ class DynamicDS {
       freq: { ...this.freq },
       lastOpTime: this.lastOpTime,
       idleTime: Date.now() - this.lastOpTime,
-      history: [...this.history].slice(0, 10)
+      history: [...this.history].slice(0, 10),
     };
   }
 
@@ -422,14 +510,14 @@ class DynamicDS {
       this.ll_head = node;
       return;
     }
-    
+
     let cur = this.ll_head;
     let i = 0;
     while (cur && i < index - 1) {
       cur = cur.next;
       i++;
     }
-    
+
     if (cur) {
       node.next = cur.next;
       cur.next = node;
@@ -438,19 +526,19 @@ class DynamicDS {
 
   _llRemoveAt(index) {
     if (!this.ll_head) return;
-    
+
     if (index === 0) {
       this.ll_head = this.ll_head.next;
       return;
     }
-    
+
     let cur = this.ll_head;
     let i = 0;
     while (cur && i < index - 1) {
       cur = cur.next;
       i++;
     }
-    
+
     if (cur && cur.next) {
       cur.next = cur.next.next;
     }
@@ -491,41 +579,42 @@ class DynamicDS {
   _bstInsert(value) {
     const insertNode = (node, value) => {
       if (!node) return this._BSTNode(value);
-      
+
       if (value <= node.value) {
         node.left = insertNode(node.left, value);
       } else {
         node.right = insertNode(node.right, value);
       }
-      
-      node.height = 1 + Math.max(this._height(node.left), this._height(node.right));
+
+      node.height =
+        1 + Math.max(this._height(node.left), this._height(node.right));
       const balance = this._getBalance(node);
-      
+
       // Left Left
       if (balance > 1 && value <= node.left.value) {
         return this._rightRotate(node);
       }
-      
+
       // Left Right
       if (balance > 1 && value > node.left.value) {
         node.left = this._leftRotate(node.left);
         return this._rightRotate(node);
       }
-      
+
       // Right Right
       if (balance < -1 && value > node.right.value) {
         return this._leftRotate(node);
       }
-      
+
       // Right Left
       if (balance < -1 && value <= node.right.value) {
         node.right = this._rightRotate(node.right);
         return this._leftRotate(node);
       }
-      
+
       return node;
     };
-    
+
     this.bst_root = insertNode(this.bst_root, value);
   }
 
@@ -544,10 +633,10 @@ class DynamicDS {
       while (current.left) current = current.left;
       return current;
     };
-    
+
     const deleteNode = (node, value) => {
       if (!node) return null;
-      
+
       if (value < node.value) {
         node.left = deleteNode(node.left, value);
       } else if (value > node.value) {
@@ -566,33 +655,34 @@ class DynamicDS {
           node.right = deleteNode(node.right, temp.value);
         }
       }
-      
+
       if (!node) return node;
-      
-      node.height = Math.max(this._height(node.left), this._height(node.right)) + 1;
+
+      node.height =
+        Math.max(this._height(node.left), this._height(node.right)) + 1;
       const balance = this._getBalance(node);
-      
+
       if (balance > 1 && this._getBalance(node.left) >= 0) {
         return this._rightRotate(node);
       }
-      
+
       if (balance > 1 && this._getBalance(node.left) < 0) {
         node.left = this._leftRotate(node.left);
         return this._rightRotate(node);
       }
-      
+
       if (balance < -1 && this._getBalance(node.right) <= 0) {
         return this._leftRotate(node);
       }
-      
+
       if (balance < -1 && this._getBalance(node.right) > 0) {
         node.right = this._rightRotate(node.right);
         return this._leftRotate(node);
       }
-      
+
       return node;
     };
-    
+
     this.bst_root = deleteNode(this.bst_root, value);
   }
 
@@ -613,7 +703,7 @@ class DynamicDS {
     return {
       value: node.value,
       left: this._cloneBST(node.left),
-      right: this._cloneBST(node.right)
+      right: this._cloneBST(node.right),
     };
   }
 
@@ -622,11 +712,11 @@ class DynamicDS {
   // ========================================
 
   /**
-   * Convert to specified type
+   * Convert to specified type with database changing
    */
   _convertTo(targetType) {
     if (this.type === targetType) return;
-    
+
     console.log(`[CONVERT] ${this.type} → ${targetType}`);
     const data = this.getAll();
     this.type = targetType;
@@ -643,7 +733,7 @@ class DynamicDS {
     this.array = [];
     this.ll_head = null;
     this.bst_root = null;
-    
+
     // Rebuild in current type
     switch (this.type) {
       case "array":
