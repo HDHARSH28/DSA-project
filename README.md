@@ -1,54 +1,70 @@
-# Data Structure Visualizer - How to Run
+# 🚀 DSA Visualizer & Adaptive Data Structure
 
-This guide will walk you through setting up and running the project on your local machine.
+An interactive web app for visualizing data structures with both **static** and **dynamic** (adaptive) modes.
 
-## 🏁 Getting Started
+## ✨ Features
 
-You will need two terminal windows to run both the frontend and backend servers simultaneously.
+### 📊 Static Mode
+- **Array**, **Linked List**, and **BST** (AVL) operations
+- Visual representations with animations
+- Manual conversions between structures
+- Real-time operation tracking
 
-### Prerequisites
+### 🔄 Dynamic Mode
+- **3-Phase Adaptive System** - automatically switches between structures based on:
+  - Operation frequency (search/index/insert)
+  - Data size (Phase 1: <100, Phase 2: 100-500, Phase 3: >500)
+  - Idle timeout (5 minutes)
+- Smart optimization for your usage patterns
+- Live metrics and state monitoring
 
-* Make sure you have [Node.js](https://nodejs.org/en/download/) installed. You can check your version with:
-    ```sh
-    node -v
-    ```
+## 🛠️ Tech Stack
+
+**Frontend:** React + Vite + TailwindCSS  
+**Backend:** Node.js + Express  
+**Data Structures:** Array, Linked List, AVL Tree
+
+## 🏃 Quick Start
+
+**Prerequisites:** [Node.js](https://nodejs.org/) installed
+
+```sh
+# Install dependencies
+cd backend && npm install
+cd ../frontend && npm install
+
+# Run backend (Terminal 1)
+cd backend && npm run dev
+
+# Run frontend (Terminal 2)
+cd frontend && npm run dev
+```
+
+**View:** [http://localhost:5173](http://localhost:5173)  
+**API:** [http://localhost:3000](http://localhost:3000)
+
+## 📖 Documentation
+
+- **API Routes:** See [`backend/API_ROUTES.md`](backend/API_ROUTES.md)
+- **Dynamic System:** 3-phase threshold-based automatic switching
+
+## 🎯 Project Structure
+
+```
+DSA-project/
+├── backend/
+│   ├── server.js       # Express server
+│   ├── static.js       # Static DS implementations
+│   ├── dynamic.js      # Adaptive DS logic
+│   └── API_ROUTES.md   # API documentation
+└── frontend/
+    └── src/
+        ├── App.jsx
+        ├── Static.jsx  # Static mode UI
+        ├── Dynamic.jsx # Dynamic mode UI
+        └── components/ # Visualizers
+```
 
 ---
 
-### Step 1: Install Dependencies
-
-1.  **Open your first terminal** and navigate to the `backend` directory to install its dependencies:
-    ```sh
-    cd path/to/your/project/backend
-    npm install
-    ```
-
-2.  **Open your second terminal** and navigate to the `frontend` directory to install its dependencies:
-    ```sh
-    cd path/to/your/project/frontend
-    npm install
-    ```
-
----
-
-### Step 2: Run the Servers
-
-1.  **In your first terminal (the `backend` directory)**, start the backend server:
-    ```sh
-    npm run dev
-    ```
-    The server will start and listen on `http://localhost:3000`.
-
-2.  **In your second terminal (the `frontend` directory)**, start the frontend development server:
-    ```sh
-    npm run dev
-    ```
-    The application will automatically open in your browser.
-
----
-
-### Step 3: View the Application
-
-Open your web browser and navigate to the following URL:
-
-[http://localhost:5173](http://localhost:5173)
+**Made with ❤️ for Data Structures & Algorithms**

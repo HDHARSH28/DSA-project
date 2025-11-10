@@ -168,7 +168,7 @@ function BSTView({ tree = null }) {
                     exit="exit"
                     stroke="url(#linkGradient)"
                     strokeWidth="4"
-                    strokeLinecap="round"
+                    strokeLinecap="round" 
                     fill="none"
                     style={{ pathLength: 1 }}
                   />
