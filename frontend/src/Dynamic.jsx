@@ -514,14 +514,14 @@ export default function DynamicView() {
             <label className="block text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">
               Value
               <span className="ml-2 text-emerald-400 text-[10px] font-normal">
-                (for insert/delete)
+                (for insert/delete/search)
               </span>
             </label>
             <input
               value={input}
               onChange={(e) => setInput(e.target.value)}
               className="input-modern w-full"
-              placeholder="Enter number to insert/delete"
+              placeholder="Enter number to insert/delete/search"
               disabled={loading}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !loading) handleInsert();
@@ -534,14 +534,14 @@ export default function DynamicView() {
             <label className="block text-xs font-semibold text-stone-400 mb-2 uppercase tracking-wide">
               Index
               <span className="ml-2 text-purple-400 text-[10px] font-normal">
-                (for array access)
+                (for array access/insert)
               </span>
             </label>
             <input
               value={indexInput}
               onChange={(e) => setIndexInput(e.target.value)}
               className="input-modern w-full"
-              placeholder="Enter index to access"
+              placeholder="Enter index to access/insert "
               disabled={loading}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !loading) handleAccessIndex();
@@ -590,6 +590,9 @@ export default function DynamicView() {
           </button>
           <button onClick={() => handleBulkAdd(100)} className="btn btn-secondary" disabled={loading}>
             Add 100
+          </button>
+          <button onClick={() => handleBulkAdd(500)} className="btn btn-secondary" disabled={loading}>
+            Add 500
           </button>
           <button onClick={handleClear} className="btn btn-danger" disabled={loading}>
             Clear All

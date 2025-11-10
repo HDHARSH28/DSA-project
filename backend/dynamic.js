@@ -369,7 +369,7 @@ class DynamicDS {
         return null;
     }
   }
-
+ 
   /**
    * Get all data as array
    */
@@ -482,7 +482,7 @@ class DynamicDS {
     this._updatePhase();
     return [];
   }
-
+ 
   /**
    * Get current state info
    */
