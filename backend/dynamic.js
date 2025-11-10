@@ -262,6 +262,9 @@ class DynamicDS {
   /**
    * Remove at index
    */
+
+
+  ///currently not working 
   removeAt(index) {
     this._trackOperation("insert"); // delete is similar to insert
     
