@@ -158,6 +158,9 @@ export default function DynamicView() {
         throw new Error("Index out of bounds");
       }
       
+      setData(res.data || []);
+      setTree(res.tree || null);
+      setDsType(res.type || "array");
       setMessage(`Element at index ${index} is: ${res.value}`);
       setSearchResult(true);
       await fetchState();
@@ -176,6 +179,9 @@ export default function DynamicView() {
       const value = validateInput(input);
       
       const res = await dy_search(value);
+      setData(res.data || []);
+      setTree(res.tree || null);
+      setDsType(res.type || "array");
       setSearchResult(res.found);
       setMessage(res.found ? `Found ${value}!` : `${value} not found`);
       await fetchState();
