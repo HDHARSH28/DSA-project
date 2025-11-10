@@ -201,31 +201,39 @@ class DynamicDS {
    * Insert at index (or append if no index)
    */
   insertAt(index, value) {
-    this._trackOperation("insert");
-    
-    if (index === undefined || index === null) {
-      // Append operation
-      return this._append(value);
-    }
-    
-    // Index-based insertion
-    switch (this.type) {
-      case "array":
-        if (index < 0 || index > this.array.length) {
-          this.array.push(value);
-        } else {
-          this.array.splice(index, 0, value);
-        }
-        break;
-      case "linkedlist":
-        this._llInsertAt(index, value);
-        break;
-      case "bst":
-        // BST doesn't support index-based insertion; append instead
-        this._bstInsert(value);
-        break;
-    }
+  // Track this as an insert operation for adaptive switching
+  this._trackOperation("insert");
+
+  // Handle "no index" case — just append
+  if (index === undefined || index === null) {
+    return this._append(value);
   }
+
+  switch (this.type) {
+    case "array":
+      if (index < 0) index = 0;
+      if (index > this.array.length) index = this.array.length;
+      this.array.splice(index, 0, value);
+      console.log(`[ARRAY] Inserted ${value} at index ${index}`);
+      break;
+
+    case "linkedlist":
+      this._llInsertAt(index, value);
+      console.log(`[LINKEDLIST] Inserted ${value} at index ${index}`);
+      break;
+
+    case "bst":
+      this._bstInsert(value);
+      console.log(`[BST] Inserted ${value} (index ignored, BST auto-places)`);
+      break;
+
+    default:
+      console.error(`[ERROR] Unknown structure type: ${this.type}`);
+  }
+
+  return true; // Indicate success
+}
+
 
   /**
    * Append value to end of structure
