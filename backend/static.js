@@ -83,8 +83,8 @@ class Wrapper {
       if (cur.value === value) {
         if (prev) prev.next = cur.next;
         else this.ll_head = cur.next;
-        
-        this.front_database.splice(index, 1); 
+
+        this.front_database.splice(index, 1);
         deleted = true;
         break; // Stop after deleting the first instance
       }
@@ -105,7 +105,7 @@ class Wrapper {
     }
   }
 
-  ll_sort_inc(){
+  ll_sort_inc() {
     const start = performance.now();
     // Extract values to array
     const values = [];
@@ -115,7 +115,7 @@ class Wrapper {
       cur = cur.next;
     }
     values.sort((a, b) => a - b);
-    
+
     // Rebuild linked list from sorted values
     this.ll_head = null;
     for (let i = values.length - 1; i >= 0; i--) {
@@ -123,15 +123,15 @@ class Wrapper {
       node.next = this.ll_head;
       this.ll_head = node;
     }
-    
+
     // Update front_database
     this.front_database = [...values];
-    
+
     const end = performance.now();
     return this._emit("LL_SORT_INC", "sorted in increasing order", end - start);
   }
-  
-  ll_sort_dec(){
+
+  ll_sort_dec() {
     const start = performance.now();
     // Extract values to array
     const values = [];
@@ -141,7 +141,7 @@ class Wrapper {
       cur = cur.next;
     }
     values.sort((a, b) => b - a);
-    
+
     // Rebuild linked list from sorted values
     this.ll_head = null;
     for (let i = values.length - 1; i >= 0; i--) {
@@ -149,10 +149,10 @@ class Wrapper {
       node.next = this.ll_head;
       this.ll_head = node;
     }
-    
+
     // Update front_database
     this.front_database = [...values];
-    
+
     const end = performance.now();
     return this._emit("LL_SORT_DEC", "sorted in decreasing order", end - start);
   }
@@ -162,7 +162,7 @@ class Wrapper {
     const start = performance.now();
     this.arr.push(value);
     const end = performance.now();
-    this.front_database.push(value); 
+    this.front_database.push(value);
     const idx = this.arr.length - 1;
     return this._emit(
       "ARR_PUSH",
@@ -179,14 +179,14 @@ class Wrapper {
       this.arr.splice(idx, 1);
       const end = performance.now();
       // Remove from front_database at the same index
-      this.front_database.splice(idx, 1); 
+      this.front_database.splice(idx, 1);
       return this._emit("ARR_DELETE", `deleted index ${idx}`, end - start);
     } else {
       const end = performance.now();
       return this._emit("ARR_DELETE", "not found", end - start);
     }
   }
-  
+
   arr_search(value) {
     const start = performance.now();
     const idx = this.arr.indexOf(value);
@@ -245,7 +245,7 @@ class Wrapper {
         return this._emit("BST_SEARCH", "found in bst", end - start);
       }
       // Uses the same comparison logic as insert (value < cur.value goes left)
-      cur = value < cur.value ? cur.left : cur.right; 
+      cur = value < cur.value ? cur.left : cur.right;
     }
     const end = performance.now();
     return this._emit("BST_SEARCH", "not found", end - start);
@@ -257,7 +257,8 @@ class Wrapper {
 
     // AVL delete implementation that sets deleted flag when a node is removed
     const _height = (node) => (node ? node.height : 0);
-    const _getBalance = (node) => (node ? _height(node.left) - _height(node.right) : 0);
+    const _getBalance = (node) =>
+      node ? _height(node.left) - _height(node.right) : 0;
 
     const _rightRotate = (y) => {
       const x = y.left;
@@ -367,8 +368,7 @@ class Wrapper {
     this.front_database = this._bst_inorder();
 
     // Check if deletion happened using the 'deleted' flag
-    if (deleted)
-      return this._emit("BST_DELETE", "success", end - start);
+    if (deleted) return this._emit("BST_DELETE", "success", end - start);
     else return this._emit("BST_DELETE", "not found", end - start);
   }
 
@@ -384,7 +384,7 @@ class Wrapper {
     inorder(this.bst_root);
     return res;
   }
-  
+
   // ---------- Frontend Database Getter ----------
   getFrontDatabase() {
     return { array: this.front_database, tree: this._cloneBST(this.bst_root) };
@@ -432,7 +432,7 @@ class Wrapper {
     this.front_database = [...result];
     return this._emit("LL_TO_ARRAY", "success", end - start);
   }
-  
+
   arrayToBST() {
     const start = performance.now();
     this.bst_root = null;
@@ -443,7 +443,7 @@ class Wrapper {
     this.front_database = this._bst_inorder();
     return this._emit("ARRAY_TO_BST", "success", end - start);
   }
-  
+
   bstToArray() {
     const start = performance.now();
     const arr = this._bst_inorder();
@@ -512,7 +512,8 @@ class Wrapper {
     if (!node) return this._BSTNode(value);
 
     if (value <= node.value) node.left = this._insertBSTNode(node.left, value);
-    else if (value > node.value) node.right = this._insertBSTNode(node.right, value);
+    else if (value > node.value)
+      node.right = this._insertBSTNode(node.right, value);
     else return node; // equal values handled by <= branch, but keep safe
 
     // Update height
@@ -560,4 +561,3 @@ class Wrapper {
 }
 
 module.exports = Wrapper;
-

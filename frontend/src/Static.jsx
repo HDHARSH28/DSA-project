@@ -67,7 +67,7 @@ export default function StaticView() {
 
   const recordEvent = (evt) => {
     if (!evt) return;
-    setEvents((p) => [evt, ...p].slice(0, 200));
+    setEvents((p) => [evt, ...p].slice(0,  200));
   };
 
   // Unified updater
@@ -111,7 +111,7 @@ export default function StaticView() {
       setLoading(true); setError("");
       const num = validateInput(input);
       const res = await arr_search(num);
-      applyDataResponse(res);
+      applyDataResponse(res,{ clearInput: true, resetSearch: true });
       setSearchResult(res.detail?.startsWith("found") || false);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
@@ -121,7 +121,7 @@ export default function StaticView() {
     try {
       setLoading(true); setError("");
       const res = await arr_sort_inc();
-      applyDataResponse(res, { resetSearch: true });
+      applyDataResponse(res);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
   };
@@ -130,7 +130,7 @@ export default function StaticView() {
     try {
       setLoading(true); setError("");
       const res = await arr_sort_dec();
-      applyDataResponse(res, { resetSearch: true });
+      applyDataResponse(res);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
   };
@@ -170,7 +170,7 @@ export default function StaticView() {
       setLoading(true); setError("");
       const num = validateInput(input);
       const res = await ll_search(num);
-      applyDataResponse(res);
+      applyDataResponse(res,{ clearInput: true, resetSearch: true });
       setSearchResult(res.detail?.startsWith("found") || false);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
@@ -180,7 +180,7 @@ export default function StaticView() {
     try {
       setLoading(true); setError("");
       const res = await ll_sort_inc();
-      applyDataResponse(res, { resetSearch: true });
+      applyDataResponse(res);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
   };
@@ -189,7 +189,7 @@ export default function StaticView() {
     try {
       setLoading(true); setError("");
       const res = await ll_sort_dec();
-      applyDataResponse(res, { resetSearch: true });
+      applyDataResponse(res);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
   };
@@ -219,7 +219,7 @@ export default function StaticView() {
       setLoading(true); setError("");
       const num = validateInput(input);
       const res = await bst_search(num);
-      applyDataResponse(res);
+      applyDataResponse(res,{ clearInput: true, resetSearch: true });
       setSearchResult(res.detail?.startsWith("found") || false);
     } catch (e) { setError(e.message || "An error occurred"); }
     finally { setLoading(false); }
