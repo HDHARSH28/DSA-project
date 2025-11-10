@@ -515,13 +515,16 @@ class DynamicDS {
   // ========================================
 
   _llInsertAt(index, value) {
+   
     const node = this._LLNode(value);
-    if (index === 0) {
+
+    if (index <= 0 || !this.ll_head) {
       node.next = this.ll_head;
       this.ll_head = node;
       return;
     }
 
+    // Traverse to the node just before desired index (index - 1)
     let cur = this.ll_head;
     let i = 0;
     while (cur && i < index - 1) {
@@ -529,7 +532,13 @@ class DynamicDS {
       i++;
     }
 
-    if (cur) {
+    // If cur is null, index was greater than list length -> append at tail
+    if (!cur) {
+      // find tail (if list was non-empty handled above, but be defensive)
+      cur = this.ll_head;
+      while (cur.next) cur = cur.next;
+      cur.next = node;
+    } else {
       node.next = cur.next;
       cur.next = node;
     }
