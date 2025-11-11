@@ -1,37 +1,23 @@
-// ---------- dynamic.js ----------
-// DynamicDS class with 3-phase adaptive switching system
 const { performance } = require("perf_hooks");
 
 class DynamicDS {
   constructor() {
-    // Core data structure storage
-    this.type = "array"; // current type: 'array', 'linkedlist', or 'bst'
+    this.type = "array";
     this.array = [];
     this.ll_head = null;
     this.bst_root = null;
 
-    // Operation tracking for frequency-based switching
     this.freq = { search: 0, index: 0, insert: 0 };
 
-    // Phase system
-    this.phase = 1; // current phase (1, 2, or 3)
-    this.threshold = 3; // current threshold based on phase
+    this.phase = 1;
+    this.threshold = 3;
 
-    // Timestamp tracking for idle detection
     this.lastOpTime = Date.now();
-    this.IDLE_TIMEOUT = 5 * 60 * 1000; // 5 minutes in milliseconds
+    this.IDLE_TIMEOUT = 5 * 60 * 1000;
 
-    // Operation history
     this.history = [];
   }
 
-  // ========================================
-  // Phase Management
-  // ========================================
-
-  /**
-   * Update phase and threshold based on current size
-   */
   _updatePhase() {
     const size = this._size();
 
@@ -47,9 +33,6 @@ class DynamicDS {
     }
   }
 
-  /**
-   * Get the size of current data structure
-   */
   _size() {
     switch (this.type) {
       case "array":
@@ -73,10 +56,6 @@ class DynamicDS {
     }
   }
 
-  /**
-   * Check if system has been idle for 5 minutes
-   * If so, reset to phase default structure
-   */
   _checkIdleTimeout() {
     const now = Date.now();
     const timeSinceLastOp = now - this.lastOpTime;
@@ -85,8 +64,7 @@ class DynamicDS {
       console.log(
         `[IDLE TIMEOUT] ${timeSinceLastOp}ms since last operation. Resetting to phase default...`
       );
-      // Convert entire structure to phase-default base on idle
-      const data = this.getAll(); // capture current data before changing type
+      const data = this.getAll();
       let baseType;
       switch (this.phase) {
         case 1:
@@ -118,9 +96,6 @@ class DynamicDS {
     }
   }
 
-  /**
-   * Reset to the default structure for current phase
-   */
   _resetToPhaseDefault() {
     let targetType;
 
@@ -146,38 +121,26 @@ class DynamicDS {
     }
   }
 
-  /**
-   * Update last operation timestamp
-   */
   _updateTimestamp() {
     this.lastOpTime = Date.now();
   }
 
-  /**
-   * Reset all operation frequencies to 0
-   */
   _resetFrequencies() {
     this.freq = { search: 0, index: 0, insert: 0 };
     console.log("[FREQ RESET] All operation frequencies reset to 0");
   }
 
-  /**
-   * Increment operation frequency and check if threshold reached
-   * @param {string} opType - 'search', 'index', or 'insert'
-   */
   _trackOperation(opType) {
     this._updatePhase();
     this._checkIdleTimeout();
     this._updateTimestamp();
 
-    // Increment the frequency counter
     if (opType in this.freq) {
       this.freq[opType]++;
       console.log(
         `[FREQ] ${opType}: ${this.freq[opType]}/${this.threshold} (Phase ${this.phase})`
       );
 
-      // Check if threshold reached for this operation
       if (this.freq[opType] >= this.threshold) {
         console.log(
           `[THRESHOLD REACHED] ${opType} reached ${this.threshold}. Switching structure...`
@@ -187,12 +150,8 @@ class DynamicDS {
     }
   }
 
-  /**
-   * Handle automatic switching when threshold is reached
-   * @param {string} opType - operation that triggered the switch
-   */
   _handleThresholdSwitch(opType) {
-    let targetType = this.type; // default to current
+    let targetType = this.type;
 
     switch (opType) {
       case "search":
@@ -206,7 +165,6 @@ class DynamicDS {
         break;
     }
 
-    // Only convert if different from current type
     if (targetType !== this.type) {
       console.log(
         `[AUTO SWITCH] ${opType} threshold hit → switching to ${targetType}`
@@ -221,10 +179,6 @@ class DynamicDS {
     }
   }
 
-  // ========================================
-  // Data Structure Helpers
-  // ========================================
-
   _LLNode(value) {
     return { value, next: null };
   }
@@ -233,19 +187,16 @@ class DynamicDS {
     return { value, left: null, right: null, height: 1 };
   }
 
-  // ========================================
-  // Core Operations
-  // ========================================
-
   /**
-   * Insert at index (or append if no index)
+   * Insert value at specified index (or append if index not provided)
+   * @param {number} index - The position to insert at
+   * @param {*} value - The value to insert
+   * @returns {boolean} Success status
    */
   insertAt(index, value) {
-  // Track this as an insert operation for adaptive switching
-  this._trackOperation("insert");
+    this._trackOperation("insert");
 
-  // Handle "no index" case — just append
-  if (index === undefined || index === null) {
+    if (index === undefined || index === null) {
     return this._append(value);
   }
 
@@ -271,13 +222,9 @@ class DynamicDS {
       console.error(`[ERROR] Unknown structure type: ${this.type}`);
   }
 
-  return true; // Indicate success
+  return true;
 }
 
-
-  /**
-   * Append value to end of structure
-   */
   _append(value) {
     switch (this.type) {
       case "array":
@@ -300,13 +247,11 @@ class DynamicDS {
   }
 
   /**
-   * Remove at index
+   * Remove element at specified index
+   * @param {number} index - The index of element to remove
    */
-
-
-  ///currently not working 
   removeAt(index) {
-    this._trackOperation("insert"); // delete is similar to insert
+    this._trackOperation("insert");
 
     switch (this.type) {
       case "array":
@@ -318,7 +263,6 @@ class DynamicDS {
         this._llRemoveAt(index);
         break;
       case "bst":
-        // BST: remove by value at that index in inorder
         const vals = this._bstInorder();
         if (index >= 0 && index < vals.length) {
           this._bstDelete(vals[index]);
@@ -328,7 +272,9 @@ class DynamicDS {
   }
 
   /**
-   * Search for a value
+   * Search for a value in the data structure
+   * @param {*} value - The value to search for
+   * @returns {boolean} True if value exists, false otherwise
    */
   search(value) {
     this._trackOperation("search");
@@ -351,7 +297,9 @@ class DynamicDS {
   }
 
   /**
-   * Access element by index (tracks index frequency)
+   * Access element by index
+   * @param {number} index - The index to access
+   * @returns {*} The value at the index, or null if not found
    */
   accessByIndex(index) {
     this._trackOperation("index");
@@ -382,7 +330,8 @@ class DynamicDS {
   }
  
   /**
-   * Get all data as array
+   * Get all data as an array
+   * @returns {Array} All elements in the data structure
    */
   getAll() {
     switch (this.type) {
@@ -404,14 +353,16 @@ class DynamicDS {
   }
 
   /**
-   * Get current type
+   * Get current data structure type
+   * @returns {string} Current type: 'array', 'linkedlist', or 'bst'
    */
   getType() {
     return this.type;
   }
 
   /**
-   * Get BST tree structure (for visualization)
+   * Get BST tree structure for visualization
+   * @returns {Object|null} Tree structure or null if not BST
    */
   getTree() {
     if (this.type === "bst") {
@@ -421,10 +372,11 @@ class DynamicDS {
   }
 
   /**
-   * Sort data
+   * Sort the data structure
+   * @param {string} order - Sort order: 'asc' or 'desc'
+   * @returns {Array} Sorted array of all elements
    */
   sort(order = "asc") {
-    // track as search because sorting primarily arranges for fast lookups (keeps behavior)
     this._trackOperation("search");
 
     const compare = (a, b) => (order === "desc" ? b - a : a - b);
@@ -432,13 +384,11 @@ class DynamicDS {
 
     switch (this.type) {
       case "array":
-        // sort in place safely by cloning then rebuilding to keep history/consistency
         sortedData = [...this.array].sort(compare);
         this._rebuildWith(sortedData);
         break;
 
       case "linkedlist":
-        // gather -> sort -> rebuild as linked list
         const llArr = [];
         let cur = this.ll_head;
         while (cur) {
@@ -450,7 +400,6 @@ class DynamicDS {
         break;
 
       case "bst":
-        // inorder gives ascending order; reverse if needed, then rebuild BST
         const vals = this._bstInorder();
         if (order === "desc") vals.reverse();
         sortedData = vals;
@@ -458,7 +407,6 @@ class DynamicDS {
         break;
 
       default:
-        // fallback: getAll, sort and rebuild
         sortedData = this.getAll().sort(compare);
         this._rebuildWith(sortedData);
         break;
@@ -468,10 +416,14 @@ class DynamicDS {
   }
 
   /**
-   * Bulk add random numbers
+   * Bulk add random numbers to the data structure
+   * @param {number} count - Number of elements to add
+   * @param {number} min - Minimum value
+   * @param {number} max - Maximum value
+   * @returns {Array} Updated data array
    */
   bulkAdd(count = 10, min = 0, max = 1000) {
-    this._trackOperation("insert"); // Bulk add is inserting multiple elements
+    this._trackOperation("insert");
 
     for (let i = 0; i < count; i++) {
       const value = Math.floor(Math.random() * (max - min + 1)) + min;
@@ -481,7 +433,8 @@ class DynamicDS {
   }
 
   /**
-   * Clear all data
+   * Clear all data and reset to array type
+   * @returns {Array} Empty array
    */
   clear() {
     this._updateTimestamp();
@@ -495,7 +448,8 @@ class DynamicDS {
   }
  
   /**
-   * Get current state info
+   * Get current system state information
+   * @returns {Object} State object with type, size, phase, frequencies, etc.
    */
   getState() {
     return {
@@ -510,12 +464,7 @@ class DynamicDS {
     };
   }
 
-  // ========================================
-  // Linked List Helpers
-  // ========================================
-
   _llInsertAt(index, value) {
-   
     const node = this._LLNode(value);
 
     if (index <= 0 || !this.ll_head) {
@@ -524,7 +473,6 @@ class DynamicDS {
       return;
     }
 
-    // Traverse to the node just before desired index (index - 1)
     let cur = this.ll_head;
     let i = 0;
     while (cur && i < index - 1) {
@@ -532,9 +480,7 @@ class DynamicDS {
       i++;
     }
 
-    // If cur is null, index was greater than list length -> append at tail
     if (!cur) {
-      // find tail (if list was non-empty handled above, but be defensive)
       cur = this.ll_head;
       while (cur.next) cur = cur.next;
       cur.next = node;
@@ -563,10 +509,6 @@ class DynamicDS {
       cur.next = cur.next.next;
     }
   }
-
-  // ========================================
-  // BST Helpers (AVL Implementation)
-  // ========================================
 
   _height(node) {
     return node ? node.height : 0;
@@ -610,23 +552,19 @@ class DynamicDS {
         1 + Math.max(this._height(node.left), this._height(node.right));
       const balance = this._getBalance(node);
 
-      // Left Left
       if (balance > 1 && value <= node.left.value) {
         return this._rightRotate(node);
       }
 
-      // Left Right
       if (balance > 1 && value > node.left.value) {
         node.left = this._leftRotate(node.left);
         return this._rightRotate(node);
       }
 
-      // Right Right
       if (balance < -1 && value > node.right.value) {
         return this._leftRotate(node);
       }
 
-      // Right Left
       if (balance < -1 && value <= node.right.value) {
         node.right = this._rightRotate(node.right);
         return this._leftRotate(node);
@@ -727,13 +665,6 @@ class DynamicDS {
     };
   }
 
-  // ========================================
-  // Structure Conversion
-  // ========================================
-
-  /**
-   * Convert to specified type with database changing
-   */
   _convertTo(targetType) {
     if (this.type === targetType) return;
 
@@ -745,16 +676,11 @@ class DynamicDS {
     if (this.history.length > 20) this.history = this.history.slice(0, 20);
   }
 
-  /**
-   * Rebuild current structure with given data
-   */
   _rebuildWith(data) {
-    // Clear all structures
     this.array = [];
     this.ll_head = null;
     this.bst_root = null;
 
-    // Rebuild in current type
     switch (this.type) {
       case "array":
         this.array = [...data];
