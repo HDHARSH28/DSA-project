@@ -13,7 +13,7 @@ class DynamicDS {
     this.threshold = 3;
 
     this.lastOpTime = Date.now();
-    this.IDLE_TIMEOUT = 5 * 60 * 1000;
+    this.IDLE_TIMEOUT =5 * 5 * 1000;
 
     this.history = [];
   }
@@ -302,26 +302,36 @@ class DynamicDS {
    * @returns {*} The value at the index, or null if not found
    */
   accessByIndex(index) {
-    this._trackOperation("index");
-
     switch (this.type) {
       case "array":
-        if (index < 0 || index >= this.array.length) return null;
+        if (index < 0 || index >= this.array.length) {
+          return null;
+        }
+        this._trackOperation("index");
         return this.array[index];
 
       case "linkedlist":
-        if (index < 0) return null;
+        if (index < 0) {
+          return null;
+        }
         let cur = this.ll_head;
         let i = 0;
         while (cur && i < index) {
           cur = cur.next;
           i++;
         }
-        return cur ? cur.value : null;
+        if (!cur) {
+          return null;
+        }
+        this._trackOperation("index");
+        return cur.value;
 
       case "bst":
         const vals = this._bstInorder();
-        if (index < 0 || index >= vals.length) return null;
+        if (index < 0 || index >= vals.length) {
+          return null;
+        }
+        this._trackOperation("index");
         return vals[index];
 
       default:
@@ -384,7 +394,7 @@ class DynamicDS {
 
     switch (this.type) {
       case "array":
-        sortedData = [...this.array].sort(compare);
+        sortedData = [...this.array].sort(compare); 
         this._rebuildWith(sortedData);
         break;
 
@@ -423,10 +433,9 @@ class DynamicDS {
    * @returns {Array} Updated data array
    */
   bulkAdd(count = 10, min = 0, max = 1000) {
-    this._trackOperation("insert");
-
     for (let i = 0; i < count; i++) {
       const value = Math.floor(Math.random() * (max - min + 1)) + min;
+      this._trackOperation("insert");
       this._append(value);
     }
     return this.getAll();
