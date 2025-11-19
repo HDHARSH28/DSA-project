@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ArrayView from "./components/ArrayView";
 import LinkedListView from "./components/LinkedListView";
 import BSTView from "./components/BSTView";
+import HashTableView from "./components/HashTableView";
 import {
   dy_all,
   dy_insert,
@@ -30,7 +31,7 @@ export default function DynamicView() {
   const [stateInfo, setStateInfo] = useState({
     phase: 1,
     threshold: 3,
-    freq: { search: 0, index: 0, insert: 0 },
+    freq: { search: 0, index: 0, insert: 0, hash_search: 0 },
     size: 0,
     idleTime: 0,
   });
@@ -54,7 +55,7 @@ export default function DynamicView() {
       setStateInfo({
         phase: state.phase || 1,
         threshold: state.threshold || 3,
-        freq: state.freq || { search: 0, index: 0, insert: 0 },
+        freq: state.freq || { search: 0, index: 0, insert: 0, hash_search: 0 },
         size: state.size || 0,
         idleTime: state.idleTime || 0,
       });
@@ -408,11 +409,32 @@ export default function DynamicView() {
         </h3>
         
         <div className="space-y-4">
-          {/* Search Frequency */}
+          {/* Hash Search Frequency (for Hash Table) */}
           <div>
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-stone-300">Search</span>
+                <span className="text-sm font-semibold text-stone-300">Search (Hash)</span>
+                <span className="badge badge-primary text-xs">→ HashTable</span>
+              </div>
+              <span className="text-sm font-mono text-stone-400">
+                {stateInfo.freq.hash_search || 0} / {stateInfo.threshold}
+              </span>
+            </div>
+            <div className="h-3 bg-stone-800 rounded-full overflow-hidden">
+              <motion.div
+                className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full"
+                initial={{ width: 0 }}
+                animate={{ width: `${getProgress("hash_search")}%` }}
+                transition={{ duration: 0.5 }}
+              />
+            </div>
+          </div>
+
+          {/* Sort/BST Frequency */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-stone-300">Sort</span>
                 <span className="badge badge-primary text-xs">→ BST</span>
               </div>
               <span className="text-sm font-mono text-stone-400">
@@ -421,7 +443,7 @@ export default function DynamicView() {
             </div>
             <div className="h-3 bg-stone-800 rounded-full overflow-hidden">
               <motion.div
-                className="h-full bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full"
+                className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${getProgress("search")}%` }}
                 transition={{ duration: 0.5 }}
@@ -634,6 +656,7 @@ export default function DynamicView() {
               {dsType === "array" && <ArrayView values={data} />}
               {dsType === "linkedlist" && <LinkedListView values={data} />}
               {dsType === "bst" && <BSTView tree={tree} />}
+              {dsType === "hashtable" && <HashTableView values={data} />}
             </motion.div>
           </AnimatePresence>
         </div>
@@ -678,7 +701,10 @@ export default function DynamicView() {
               <li>• <strong className="text-stone-300">Phase 1</strong> (size &lt; 100): Threshold = 3, Default = Array</li>
               <li>• <strong className="text-stone-300">Phase 2</strong> (100-500): Threshold = 6, Default = Linked List</li>
               <li>• <strong className="text-stone-300">Phase 3</strong> (size &gt; 500): Threshold = 9, Default = BST</li>
-              <li>• When an operation type reaches threshold, structure auto-switches to optimal type</li>
+              <li>• <strong className="text-cyan-300">Search Value</strong>: Triggers Hash Table (O(1) lookup)</li>
+              <li>• <strong className="text-green-300">Sort</strong>: Triggers BST (O(log n) sorted structure)</li>
+              <li>• <strong className="text-purple-300">Access by Index</strong>: Triggers Array (O(1) random access)</li>
+              <li>• <strong className="text-amber-300">Insert/Delete</strong>: Triggers Linked List (O(n) operations)</li>
               <li>• After 5 minutes of inactivity, resets to phase default structure</li>
             </ul>
           </div>

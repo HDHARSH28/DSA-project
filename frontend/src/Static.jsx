@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import ArrayView from "./components/ArrayView";
 import LinkedListView from "./components/LinkedListView";
 import BSTView from "./components/BSTView";
+import HashTableView from "./components/HashTableView";
 import {
   arr_push,
   arr_delete,
@@ -24,6 +25,15 @@ import {
   llToBST,
   bstToArray,
   bstToLL,
+  hash_insert,
+  hash_search,
+  hash_delete,
+  arrayToHash,
+  hashToArray,
+  llToHash,
+  hashToLL,
+  bstToHash,
+  hashToBST,
 } from "./utils";
 
 export default function StaticView() {
@@ -280,6 +290,93 @@ export default function StaticView() {
     finally { setLoading(false); }
   };
 
+  // Hash Table handlers
+  const handleHashInsert = async () => {
+    try {
+      setLoading(true); setError("");
+      const num = validateInput(input);
+      const res = await hash_insert(num);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleHashSearch = async () => {
+    try {
+      setLoading(true); setError("");
+      const num = validateInput(input);
+      const res = await hash_search(num);
+      setSearchResult(res.detail.includes("found"));
+      applyDataResponse(res, { resetSearch: false });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleHashDelete = async () => {
+    try {
+      setLoading(true); setError("");
+      const num = validateInput(input);
+      const res = await hash_delete(num);
+      applyDataResponse(res, { clearInput: true, resetSearch: true });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  // Hash Table conversion handlers
+  const handleArrayToHash = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await arrayToHash();
+      applyDataResponse(res, { nextTab: "hashtable" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleHashToArray = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await hashToArray();
+      applyDataResponse(res, { nextTab: "array" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleLLToHash = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await llToHash();
+      applyDataResponse(res, { nextTab: "hashtable" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleHashToLL = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await hashToLL();
+      applyDataResponse(res, { nextTab: "linkedlist" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleBSTToHash = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await bstToHash();
+      applyDataResponse(res, { nextTab: "hashtable" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
+  const handleHashToBST = async () => {
+    try {
+      setLoading(true); setError("");
+      const res = await hashToBST();
+      applyDataResponse(res, { nextTab: "bst" });
+    } catch (e) { setError(e.message || "An error occurred"); }
+    finally { setLoading(false); }
+  };
+
   return (
     <div className="w-full animate-fade-in">
       {/* Header */}
@@ -295,7 +392,8 @@ export default function StaticView() {
         {[
           { key: "array", label: "Array", icon: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" },
           { key: "linkedlist", label: "Linked List", icon: "M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" },
-          { key: "bst", label: "BST", icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" }
+          { key: "bst", label: "BST", icon: "M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" },
+          { key: "hashtable", label: "Hash Table", icon: "M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" }
         ].map(({ key, label, icon }) => (
           <button
             key={key}
@@ -384,7 +482,8 @@ export default function StaticView() {
               if (e.key === "Enter" && !loading) {
                 if (activeTab === "array") handleArrayPush();
                 else if (activeTab === "linkedlist") handleLLInsert();
-                else handleBSTInsert();
+                else if (activeTab === "bst") handleBSTInsert();
+                else if (activeTab === "hashtable") handleHashInsert();
               }
             }}
           />
@@ -401,6 +500,7 @@ export default function StaticView() {
               <button onClick={handleArraySortDec} className="btn btn-secondary" disabled={loading}>Sort ↓</button>
               <button onClick={handleArrayToLL} className="btn btn-secondary" disabled={loading}>Array→LL</button>
               <button onClick={handleArrayToBST} className="btn btn-secondary" disabled={loading}>Array→BST</button>
+              <button onClick={handleArrayToHash} className="btn btn-secondary" disabled={loading}>Array→Hash</button>
             </>
           )}
           {activeTab === "linkedlist" && (
@@ -413,6 +513,7 @@ export default function StaticView() {
               <button onClick={handleLLSortDec} className="btn btn-secondary" disabled={loading}>Sort ↓</button>
               <button onClick={handleLLToArray} className="btn btn-secondary" disabled={loading}>LL→Array</button>
               <button onClick={handleLLToBST} className="btn btn-secondary" disabled={loading}>LL→BST</button>
+              <button onClick={handleLLToHash} className="btn btn-secondary" disabled={loading}>LL→Hash</button>
             </>
           )}
           {activeTab === "bst" && (
@@ -422,6 +523,17 @@ export default function StaticView() {
               <button onClick={handleBSTSearch} className="btn btn-secondary" disabled={loading}>Search</button>
               <button onClick={handleBSTToArray} className="btn btn-secondary" disabled={loading}>BST→Array</button>
               <button onClick={handleBSTToLL} className="btn btn-secondary" disabled={loading}>BST→LL</button>
+              <button onClick={handleBSTToHash} className="btn btn-secondary" disabled={loading}>BST→Hash</button>
+            </>
+          )}
+          {activeTab === "hashtable" && (
+            <>
+              <button onClick={handleHashInsert} className="btn btn-primary" disabled={loading}>Insert</button>
+              <button onClick={handleHashDelete} className="btn btn-secondary" disabled={loading}>Delete</button>
+              <button onClick={handleHashSearch} className="btn btn-secondary" disabled={loading}>Search</button>
+              <button onClick={handleHashToArray} className="btn btn-secondary" disabled={loading}>Hash→Array</button>
+              <button onClick={handleHashToLL} className="btn btn-secondary" disabled={loading}>Hash→LL</button>
+              <button onClick={handleHashToBST} className="btn btn-secondary" disabled={loading}>Hash→BST</button>
             </>
           )}
         </div>
@@ -431,6 +543,7 @@ export default function StaticView() {
           {activeTab === "array" && <ArrayView values={array} />}
           {activeTab === "linkedlist" && <LinkedListView values={array} />}
           {activeTab === "bst" && <BSTView values={array} tree={tree} />}
+          {activeTab === "hashtable" && <HashTableView values={array} />}
         </div>
 
         {/* Search Result */}

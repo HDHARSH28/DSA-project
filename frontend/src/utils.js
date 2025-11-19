@@ -90,6 +90,51 @@ export async function bstToArray() {
   return res.data;
 }
 
+export async function hash_insert(value) {
+  const res = await axios.post(`${BASE_URL}/hash/insert`, { value });
+  return res.data;
+}
+
+export async function hash_search(value) {
+  const res = await axios.post(`${BASE_URL}/hash/search`, { value });
+  return res.data;
+}
+
+export async function hash_delete(value) {
+  const res = await axios.post(`${BASE_URL}/hash/delete`, { value });
+  return res.data;
+}
+
+export async function arrayToHash() {
+  const res = await axios.post(`${BASE_URL}/convert/arrayToHash`);
+  return res.data;
+}
+
+export async function hashToArray() {
+  const res = await axios.post(`${BASE_URL}/convert/hashToArray`);
+  return res.data;
+}
+
+export async function llToHash() {
+  const res = await axios.post(`${BASE_URL}/convert/llToHash`);
+  return res.data;
+}
+
+export async function hashToLL() {
+  const res = await axios.post(`${BASE_URL}/convert/hashToLL`);
+  return res.data;
+}
+
+export async function bstToHash() {
+  const res = await axios.post(`${BASE_URL}/convert/bstToHash`);
+  return res.data;
+}
+
+export async function hashToBST() {
+  const res = await axios.post(`${BASE_URL}/convert/hashToBST`);
+  return res.data;
+}
+
 export async function getFrontDatabase() {
   const res = await axios.get(`${BASE_URL}/frontend/array`);
   return res.data;

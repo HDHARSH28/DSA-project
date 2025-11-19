@@ -7,6 +7,7 @@ class Wrapper {
     this.arr = []; // Dynamic Array
     this.front_database = []; // Array for frontend rendering
     this.bst_root = null; //bst
+    this.hashTable = new Map(); // Hash Table
   }
 
   // ---------- Linked List Node Helper ----------
@@ -369,7 +370,39 @@ class Wrapper {
 
     // Check if deletion happened using the 'deleted' flag
     if (deleted) return this._emit("BST_DELETE", "success", end - start);
-    else return this._emit("BST_DELETE", "not found", end - start);
+    return this._emit("BST_DELETE", "not found", end - start);
+  }
+
+  // ---------- Hash Table Operations ----------
+  hash_insert(value) {
+    const start = performance.now();
+    this.hashTable.set(value, true);
+    const end = performance.now();
+    this.front_database = Array.from(this.hashTable.keys());
+    return this._emit("HASH_INSERT", "success", end - start);
+  }
+
+  hash_search(value) {
+    const start = performance.now();
+    const found = this.hashTable.has(value);
+    const end = performance.now();
+    if (found) {
+      return this._emit("HASH_SEARCH", "found in hash table", end - start);
+    } else {
+      return this._emit("HASH_SEARCH", "not found", end - start);
+    }
+  }
+
+  hash_delete(value) {
+    const start = performance.now();
+    const deleted = this.hashTable.delete(value);
+    const end = performance.now();
+    this.front_database = Array.from(this.hashTable.keys());
+    if (deleted) {
+      return this._emit("HASH_DELETE", "success", end - start);
+    } else {
+      return this._emit("HASH_DELETE", "not found", end - start);
+    }
   }
 
   // ---------- BST Inorder Traversal ----------
@@ -479,6 +512,77 @@ class Wrapper {
     const end = performance.now();
     this.front_database = [...arr];
     return this._emit("BST_TO_LL", "success", end - start);
+  }
+
+  // ---------- Hash Table Converters ----------
+  arrayToHash() {
+    const start = performance.now();
+    this.hashTable.clear();
+    for (let i = 0; i < this.arr.length; i++) {
+      this.hashTable.set(this.arr[i], true);
+    }
+    const end = performance.now();
+    this.front_database = Array.from(this.hashTable.keys());
+    return this._emit("ARRAY_TO_HASH", "success", end - start);
+  }
+
+  hashToArray() {
+    const start = performance.now();
+    this.arr = Array.from(this.hashTable.keys());
+    const end = performance.now();
+    this.front_database = [...this.arr];
+    return this._emit("HASH_TO_ARRAY", "success", end - start);
+  }
+
+  llToHash() {
+    const start = performance.now();
+    this.hashTable.clear();
+    let cur = this.ll_head;
+    while (cur) {
+      this.hashTable.set(cur.value, true);
+      cur = cur.next;
+    }
+    const end = performance.now();
+    this.front_database = Array.from(this.hashTable.keys());
+    return this._emit("LL_TO_HASH", "success", end - start);
+  }
+
+  hashToLL() {
+    const start = performance.now();
+    const arr = Array.from(this.hashTable.keys());
+    this.ll_head = null;
+    for (let i = arr.length - 1; i >= 0; i--) {
+      const node = this._LLNode(arr[i]);
+      node.next = this.ll_head;
+      this.ll_head = node;
+    }
+    const end = performance.now();
+    this.front_database = [...arr];
+    return this._emit("HASH_TO_LL", "success", end - start);
+  }
+
+  bstToHash() {
+    const start = performance.now();
+    const arr = this._bst_inorder();
+    this.hashTable.clear();
+    for (let i = 0; i < arr.length; i++) {
+      this.hashTable.set(arr[i], true);
+    }
+    const end = performance.now();
+    this.front_database = Array.from(this.hashTable.keys());
+    return this._emit("BST_TO_HASH", "success", end - start);
+  }
+
+  hashToBST() {
+    const start = performance.now();
+    this.bst_root = null;
+    const arr = Array.from(this.hashTable.keys());
+    for (let i = 0; i < arr.length; i++) {
+      this.bst_root = this._insertBSTNode(this.bst_root, arr[i]);
+    }
+    const end = performance.now();
+    this.front_database = this._bst_inorder();
+    return this._emit("HASH_TO_BST", "success", end - start);
   }
 
   // Helper for BST insertion (used by insert and converters)

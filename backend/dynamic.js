@@ -6,8 +6,9 @@ class DynamicDS {
     this.array = [];
     this.ll_head = null;
     this.bst_root = null;
+    this.hashTable = new Map();
 
-    this.freq = { search: 0, index: 0, insert: 0 };
+    this.freq = { search: 0, index: 0, insert: 0, hash_search: 0 };
 
     this.phase = 1;
     this.threshold = 3;
@@ -51,6 +52,8 @@ class DynamicDS {
           return 1 + countNodes(node.left) + countNodes(node.right);
         };
         return countNodes(this.bst_root);
+      case "hashtable":
+        return this.hashTable.size;
       default:
         return 0;
     }
@@ -126,7 +129,7 @@ class DynamicDS {
   }
 
   _resetFrequencies() {
-    this.freq = { search: 0, index: 0, insert: 0 };
+    this.freq = { search: 0, index: 0, insert: 0, hash_search: 0 };
     console.log("[FREQ RESET] All operation frequencies reset to 0");
   }
 
@@ -156,6 +159,9 @@ class DynamicDS {
     switch (opType) {
       case "search":
         targetType = "bst";
+        break;
+      case "hash_search":
+        targetType = "hashtable";
         break;
       case "index":
         targetType = "array";
@@ -218,6 +224,11 @@ class DynamicDS {
       console.log(`[BST] Inserted ${value} (index ignored, BST auto-places)`);
       break;
 
+    case "hashtable":
+      this.hashTable.set(value, true);
+      console.log(`[HASHTABLE] Inserted ${value} (index ignored, hash-based storage)`);
+      break;
+
     default:
       console.error(`[ERROR] Unknown structure type: ${this.type}`);
   }
@@ -242,6 +253,9 @@ class DynamicDS {
         break;
       case "bst":
         this._bstInsert(value);
+        break;
+      case "hashtable":
+        this.hashTable.set(value, true);
         break;
     }
   }
@@ -268,6 +282,12 @@ class DynamicDS {
           this._bstDelete(vals[index]);
         }
         break;
+      case "hashtable":
+        const hashVals = Array.from(this.hashTable.keys());
+        if (index >= 0 && index < hashVals.length) {
+          this.hashTable.delete(hashVals[index]);
+        }
+        break;
     }
   }
 
@@ -277,7 +297,7 @@ class DynamicDS {
    * @returns {boolean} True if value exists, false otherwise
    */
   search(value) {
-    this._trackOperation("search");
+    this._trackOperation("hash_search");
 
     switch (this.type) {
       case "array":
@@ -291,6 +311,8 @@ class DynamicDS {
         return false;
       case "bst":
         return this._bstSearch(value);
+      case "hashtable":
+        return this.hashTable.has(value);
       default:
         return false;
     }
@@ -334,6 +356,15 @@ class DynamicDS {
         this._trackOperation("index");
         return vals[index];
 
+      case "hashtable":
+        const hashVals = Array.from(this.hashTable.keys());
+        if (index < 0 || index >= hashVals.length) {
+          console.error(`[ERROR] Index ${index} out of bounds. HashTable size: ${hashVals.length}`);
+          return null;
+        }
+        this._trackOperation("index");
+        return hashVals[index];
+
       default:
         return null;
     }
@@ -357,6 +388,8 @@ class DynamicDS {
         return result;
       case "bst":
         return this._bstInorder();
+      case "hashtable":
+        return Array.from(this.hashTable.keys());
       default:
         return [];
     }
@@ -364,7 +397,7 @@ class DynamicDS {
 
   /**
    * Get current data structure type
-   * @returns {string} Current type: 'array', 'linkedlist', or 'bst'
+   * @returns {string} Current type: 'array', 'linkedlist', 'bst', or 'hashtable'
    */
   getType() {
     return this.type;
@@ -450,6 +483,7 @@ class DynamicDS {
     this.array = [];
     this.ll_head = null;
     this.bst_root = null;
+    this.hashTable.clear();
     this.type = "array";
     this._resetFrequencies();
     this._updatePhase();
@@ -689,6 +723,7 @@ class DynamicDS {
     this.array = [];
     this.ll_head = null;
     this.bst_root = null;
+    this.hashTable.clear();
 
     switch (this.type) {
       case "array":
@@ -704,6 +739,11 @@ class DynamicDS {
       case "bst":
         for (const val of data) {
           this._bstInsert(val);
+        }
+        break;
+      case "hashtable":
+        for (const val of data) {
+          this.hashTable.set(val, true);
         }
         break;
     }

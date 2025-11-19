@@ -118,6 +118,48 @@ app.post("/convert/bstToArray", (req, res) => {
 app.post("/convert/bstToLL", (req, res) => {
   res.json(ds.bstToLL());
 });
+
+// ---------- Hash Table Endpoints ----------
+app.post("/hash/insert", (req, res) => {
+  const { value } = req.body;
+  res.json(ds.hash_insert(value));
+});
+
+app.post("/hash/search", (req, res) => {
+  const { value } = req.body;
+  res.json(ds.hash_search(value));
+});
+
+app.post("/hash/delete", (req, res) => {
+  const { value } = req.body;
+  res.json(ds.hash_delete(value));
+});
+
+// ---------- Hash Table Converter Endpoints ----------
+app.post("/convert/arrayToHash", (req, res) => {
+  res.json(ds.arrayToHash());
+});
+
+app.post("/convert/hashToArray", (req, res) => {
+  res.json(ds.hashToArray());
+});
+
+app.post("/convert/llToHash", (req, res) => {
+  res.json(ds.llToHash());
+});
+
+app.post("/convert/hashToLL", (req, res) => {
+  res.json(ds.hashToLL());
+});
+
+app.post("/convert/bstToHash", (req, res) => {
+  res.json(ds.bstToHash());
+});
+
+app.post("/convert/hashToBST", (req, res) => {
+  res.json(ds.hashToBST());
+});
+
 // ---------- Frontend Database Endpoint (Static Mode) ----------
 app.get("/frontend/array", (req, res) => {
   res.json(ds.getFrontDatabase());
