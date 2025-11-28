@@ -283,6 +283,67 @@ app.post("/dy/clear", (req, res) => {
   });
 });
 
+// Set custom search threshold
+app.post("/dy/thresholds/search", (req, res) => {
+  try {
+    const { threshold } = req.body;
+    dynamicDS.setSearchThreshold(threshold);
+    res.json({ 
+      success: true,
+      customThresholds: dynamicDS.getCustomThresholds()
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Set custom insert threshold
+app.post("/dy/thresholds/insert", (req, res) => {
+  try {
+    const { threshold } = req.body;
+    dynamicDS.setInsertThreshold(threshold);
+    res.json({ 
+      success: true,
+      customThresholds: dynamicDS.getCustomThresholds()
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Set custom sort threshold
+app.post("/dy/thresholds/sort", (req, res) => {
+  try {
+    const { threshold } = req.body;
+    dynamicDS.setSortThreshold(threshold);
+    res.json({ 
+      success: true,
+      customThresholds: dynamicDS.getCustomThresholds()
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Set custom index threshold
+app.post("/dy/thresholds/index", (req, res) => {
+  try {
+    const { threshold } = req.body;
+    dynamicDS.setIndexThreshold(threshold);
+    res.json({ 
+      success: true,
+      customThresholds: dynamicDS.getCustomThresholds()
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// Get custom thresholds
+app.get("/dy/thresholds", (req, res) => {
+  res.json(dynamicDS.getCustomThresholds());
+});
+
 // =======================================================
 // --- END: Dynamic Endpoints ---
 // =======================================================

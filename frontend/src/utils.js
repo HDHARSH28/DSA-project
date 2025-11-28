@@ -194,3 +194,33 @@ export async function dy_state() {
   const res = await axios.get(`${BASE_URL}/dy/state`);
   return res.data; // { type, size, history, nextType }
 }
+
+// Set custom search threshold
+export async function dy_setSearchThreshold(threshold) {
+  const res = await axios.post(`${BASE_URL}/dy/thresholds/search`, { threshold });
+  return res.data; // { success, customThresholds }
+}
+
+// Set custom insert threshold
+export async function dy_setInsertThreshold(threshold) {
+  const res = await axios.post(`${BASE_URL}/dy/thresholds/insert`, { threshold });
+  return res.data; // { success, customThresholds }
+}
+
+// Set custom sort threshold
+export async function dy_setSortThreshold(threshold) {
+  const res = await axios.post(`${BASE_URL}/dy/thresholds/sort`, { threshold });
+  return res.data; // { success, customThresholds }
+}
+
+// Set custom index threshold
+export async function dy_setIndexThreshold(threshold) {
+  const res = await axios.post(`${BASE_URL}/dy/thresholds/index`, { threshold });
+  return res.data; // { success, customThresholds }
+}
+
+// Get custom thresholds
+export async function dy_getThresholds() {
+  const res = await axios.get(`${BASE_URL}/dy/thresholds`);
+  return res.data; // { searchThreshold, insertThreshold, sortThreshold, indexThreshold }
+}

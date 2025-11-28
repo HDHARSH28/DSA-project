@@ -13,10 +13,17 @@ class DynamicDS {
     this.phase = 1;
     this.threshold = 3;
 
+    // Custom thresholds (null means use phase-based defaults)
+    this.customSearchThreshold = null;
+    this.customInsertThreshold = null;
+    this.customSortThreshold = null;
+    this.customIndexThreshold = null;
+
     this.lastOpTime = Date.now();
-    this.IDLE_TIMEOUT =5 * 5 * 1000;
+    this.IDLE_TIMEOUT =5 * 60 * 1000;
 
     this.history = [];
+    this._operationContext = null; // Used to distinguish sort from search
   }
 
   _updatePhase() {
@@ -31,6 +38,33 @@ class DynamicDS {
     } else {
       this.phase = 3;
       this.threshold = 9;
+    }
+  }
+
+  /**
+   * Get the threshold for a specific operation type
+   * @param {string} opType - Operation type: 'search', 'hash_search', 'insert', 'index'
+   * @returns {number} The threshold value to use
+   */
+  _getThresholdForOperation(opType) {
+    // Use custom thresholds if set, otherwise use phase-based default
+    // Check operation context to distinguish sort from search
+    if (opType === "search") {
+      // If context is "sort", use customSortThreshold, otherwise use customSearchThreshold
+      if (this._operationContext === "sort") {
+        return this.customSortThreshold !== null ? this.customSortThreshold : this.threshold;
+      } else {
+        return this.customSearchThreshold !== null ? this.customSearchThreshold : this.threshold;
+      }
+    } else if (opType === "hash_search") {
+      return this.customSearchThreshold !== null ? this.customSearchThreshold : this.threshold;
+    } else if (opType === "insert") {
+      return this.customInsertThreshold !== null ? this.customInsertThreshold : this.threshold;
+    } else if (opType === "index") {
+      return this.customIndexThreshold !== null ? this.customIndexThreshold : this.threshold;
+    } else {
+      // For other operations, use phase-based default
+      return this.threshold;
     }
   }
 
@@ -140,17 +174,20 @@ class DynamicDS {
 
     if (opType in this.freq) {
       this.freq[opType]++;
+      const operationThreshold = this._getThresholdForOperation(opType);
       console.log(
-        `[FREQ] ${opType}: ${this.freq[opType]}/${this.threshold} (Phase ${this.phase})`
+        `[FREQ] ${opType}: ${this.freq[opType]}/${operationThreshold} (Phase ${this.phase})`
       );
 
-      if (this.freq[opType] >= this.threshold) {
+      if (this.freq[opType] >= operationThreshold) {
         console.log(
-          `[THRESHOLD REACHED] ${opType} reached ${this.threshold}. Switching structure...`
+          `[THRESHOLD REACHED] ${opType} reached ${operationThreshold}. Switching structure...`
         );
         this._handleThresholdSwitch(opType);
       }
     }
+    // Reset operation context after tracking
+    this._operationContext = null;
   }
 
   _handleThresholdSwitch(opType) {
@@ -420,6 +457,7 @@ class DynamicDS {
    * @returns {Array} Sorted array of all elements
    */
   sort(order = "asc") {
+    this._operationContext = "sort";
     this._trackOperation("search");
 
     const compare = (a, b) => (order === "desc" ? b - a : a - b);
@@ -491,6 +529,91 @@ class DynamicDS {
   }
  
   /**
+   * Set custom threshold for search operations
+   * @param {number|null} threshold - Custom threshold value, or null to use phase-based default
+   */
+  setSearchThreshold(threshold) {
+    if (threshold === null || threshold === undefined) {
+      this.customSearchThreshold = null;
+      console.log("[THRESHOLD] Reset search threshold to phase-based default");
+    } else {
+      const num = Number(threshold);
+      if (isNaN(num) || num < 1) {
+        throw new Error("Search threshold must be a positive number");
+      }
+      this.customSearchThreshold = num;
+      console.log(`[THRESHOLD] Set custom search threshold to ${num}`);
+    }
+  }
+
+  /**
+   * Set custom threshold for insert operations
+   * @param {number|null} threshold - Custom threshold value, or null to use phase-based default
+   */
+  setInsertThreshold(threshold) {
+    if (threshold === null || threshold === undefined) {
+      this.customInsertThreshold = null;
+      console.log("[THRESHOLD] Reset insert threshold to phase-based default");
+    } else {
+      const num = Number(threshold);
+      if (isNaN(num) || num < 1) {
+        throw new Error("Insert threshold must be a positive number");
+      }
+      this.customInsertThreshold = num;
+      console.log(`[THRESHOLD] Set custom insert threshold to ${num}`);
+    }
+  }
+
+  /**
+   * Set custom threshold for sort operations
+   * @param {number|null} threshold - Custom threshold value, or null to use phase-based default
+   */
+  setSortThreshold(threshold) {
+    if (threshold === null || threshold === undefined) {
+      this.customSortThreshold = null;
+      console.log("[THRESHOLD] Reset sort threshold to phase-based default");
+    } else {
+      const num = Number(threshold);
+      if (isNaN(num) || num < 1) {
+        throw new Error("Sort threshold must be a positive number");
+      }
+      this.customSortThreshold = num;
+      console.log(`[THRESHOLD] Set custom sort threshold to ${num}`);
+    }
+  }
+
+  /**
+   * Set custom threshold for index access operations
+   * @param {number|null} threshold - Custom threshold value, or null to use phase-based default
+   */
+  setIndexThreshold(threshold) {
+    if (threshold === null || threshold === undefined) {
+      this.customIndexThreshold = null;
+      console.log("[THRESHOLD] Reset index threshold to phase-based default");
+    } else {
+      const num = Number(threshold);
+      if (isNaN(num) || num < 1) {
+        throw new Error("Index threshold must be a positive number");
+      }
+      this.customIndexThreshold = num;
+      console.log(`[THRESHOLD] Set custom index threshold to ${num}`);
+    }
+  }
+
+  /**
+   * Get custom thresholds
+   * @returns {Object} Object with all custom thresholds
+   */
+  getCustomThresholds() {
+    return {
+      searchThreshold: this.customSearchThreshold,
+      insertThreshold: this.customInsertThreshold,
+      sortThreshold: this.customSortThreshold,
+      indexThreshold: this.customIndexThreshold,
+    };
+  }
+
+  /**
    * Get current system state information
    * @returns {Object} State object with type, size, phase, frequencies, etc.
    */
@@ -500,6 +623,7 @@ class DynamicDS {
       size: this._size(),
       phase: this.phase,
       threshold: this.threshold,
+      customThresholds: this.getCustomThresholds(),
       freq: { ...this.freq },
       lastOpTime: this.lastOpTime,
       idleTime: Date.now() - this.lastOpTime,
